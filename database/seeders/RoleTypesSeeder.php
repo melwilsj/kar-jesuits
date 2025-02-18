@@ -9,28 +9,30 @@ class RoleTypesSeeder extends Seeder
 {
     public function run(): void
     {
-        $roleTypes = [
-            // Province Roles
-            ['name' => 'Provincial', 'category' => 'province'],
-            ['name' => 'Socius', 'category' => 'province'],
-            ['name' => 'Treasurer', 'category' => 'province'],
-            
-            // Community Roles
-            ['name' => 'Rector', 'category' => 'community'],
-            ['name' => 'Superior', 'category' => 'community'],
-            ['name' => 'Minister', 'category' => 'community'],
-            ['name' => 'Treasurer', 'category' => 'community'],
-            
-            // Institution Roles
-            ['name' => 'Principal', 'category' => 'institution'],
-            ['name' => 'Director', 'category' => 'institution'],
-            ['name' => 'Administrator', 'category' => 'institution'],
-            ['name' => 'Parish Priest', 'category' => 'institution'],
-            ['name' => 'Assistant Parish Priest', 'category' => 'institution'],
+        $types = [
+            ['name' => 'Superior', 'category' => 'community', 'description' => 'Head of a Community'],
+            ['name' => 'Rector', 'category' => 'community', 'description' => 'Head of a Formation House'],
+            ['name' => 'Coordinator', 'category' => 'community', 'description' => 'Head of an Attached House'],
+            ['name' => 'Provincial', 'category' => 'province', 'description' => 'Head of a Province'],
+            ['name' => 'Minister', 'category' => 'community', 'description' => 'Community Minister'],
+            ['name' => 'Treasurer', 'category' => 'community', 'description' => 'Community Treasurer'],
+            ['name' => 'Socius', 'category' => 'province', 'description' => 'Provincial Socius'],
+            ['name' => 'Treasurer', 'category' => 'province', 'description' => 'Provincial Treasurer'],
+            ['name' => 'Principal', 'category' => 'institution', 'description' => 'Head of an Institution'],
+            ['name' => 'Director', 'category' => 'institution', 'description' => 'Head of an Institution'],
+            ['name' => 'Administrator', 'category' => 'institution', 'description' => 'Head of an Institution'],
+            ['name' => 'Parish Priest', 'category' => 'institution', 'description' => 'Head of an Institution'],
+            ['name' => 'Assistant Parish Priest', 'category' => 'institution', 'description' => 'Head of an Institution'],
         ];
 
-        foreach ($roleTypes as $roleType) {
-            RoleType::create($roleType);
+        foreach ($types as $type) {
+            RoleType::firstOrCreate(
+                ['name' => $type['name']],
+                [
+                    'category' => $type['category'],
+                    'description' => $type['description']
+                ]
+            );
         }
     }
 } 

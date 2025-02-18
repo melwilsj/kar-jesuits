@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Document extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
-        'user_id',
+        'jesuit_id',
         'category_id',
         'title',
         'file_path',
@@ -25,9 +28,9 @@ class Document extends Model
         'metadata' => 'array'
     ];
 
-    public function user(): BelongsTo
+    public function jesuit(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Jesuit::class);
     }
 
     public function category(): BelongsTo

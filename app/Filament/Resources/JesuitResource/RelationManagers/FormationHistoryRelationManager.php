@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\JesuitResource\RelationManagers;
 
+use App\Models\FormationStage;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Forms;
 use Filament\Tables;
@@ -20,7 +21,9 @@ class FormationHistoryRelationManager extends RelationManager
                     ->required(),
                 Forms\Components\TextInput::make('current_year')
                     ->numeric()
-                    ->minValue(1),
+                    ->minValue(1)
+                    ->visible(fn (callable $get) => 
+                        FormationStage::find($get('stage_id'))?->hasYears()),
                 Forms\Components\DatePicker::make('start_date')
                     ->required(),
                 Forms\Components\DatePicker::make('end_date'),
@@ -32,7 +35,8 @@ class FormationHistoryRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('stage.name'),
-                Tables\Columns\TextColumn::make('current_year'),
+                Tables\Columns\TextColumn::make('current_year')
+                    ->visible(fn ($record) => $record->stage->hasYears()),
                 Tables\Columns\TextColumn::make('start_date')->date(),
                 Tables\Columns\TextColumn::make('end_date')->date(),
             ])

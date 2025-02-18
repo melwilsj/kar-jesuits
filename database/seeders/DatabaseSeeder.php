@@ -10,14 +10,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AssistancySeeder::class,
+            CommonHouseSeeder::class,
             ProvinceSeeder::class,
             RegionSeeder::class,
-            FormationStagesSeeder::class,
             RoleTypesSeeder::class,
+            FormationStagesSeeder::class,
             DocumentCategoriesSeeder::class,
             RolesAndPermissionsSeeder::class,
-            UsersSeeder::class,
             CommunitiesSeeder::class,
+            UsersSeeder::class,
             UpdateRelationshipsSeeder::class,
         ]);
     }

@@ -10,23 +10,26 @@ class FormationStagesSeeder extends Seeder
     public function run(): void
     {
         $stages = [
-            ['name' => 'Novice 1st Year', 'order' => 1, 'has_years' => false],
-            ['name' => 'Novice 2nd Year', 'order' => 2, 'has_years' => false],
-            ['name' => 'Junior', 'order' => 3, 'has_years' => false],
-            ['name' => 'College Studies', 'order' => 4, 'has_years' => true, 'max_years' => 4],
-            ['name' => 'Philosophy', 'order' => 5, 'has_years' => true, 'max_years' => 2],
-            ['name' => 'Regency', 'order' => 6, 'has_years' => true, 'max_years' => 5],
-            ['name' => 'PG Studies', 'order' => 7, 'has_years' => true, 'max_years' => 3],
-            ['name' => 'Theology', 'order' => 8, 'has_years' => true, 'max_years' => 3],
-            ['name' => 'Deacon', 'order' => 9, 'has_years' => false],
-            ['name' => 'Ordained Priest', 'order' => 10, 'has_years' => false],
-            ['name' => 'Awaiting Tertianship', 'order' => 11, 'has_years' => false],
-            ['name' => 'In Tertianship', 'order' => 12, 'has_years' => false],
-            ['name' => 'Awaiting Final Vows', 'order' => 13, 'has_years' => false],
+            ['name' => 'Novice 1st Year', 'code' => 'N1', 'order' => 1],
+            ['name' => 'Novice 2nd Year', 'code' => 'N2', 'order' => 2],
+            ['name' => 'Junior', 'code' => 'JUN', 'order' => 3],
+            ['name' => 'College Studies', 'code' => 'COL', 'order' => 4],
+            ['name' => 'Philosophy', 'code' => 'PHI', 'order' => 5],
+            ['name' => 'Regency', 'code' => 'REG', 'order' => 6],
+            ['name' => 'PG Studies', 'code' => 'PG', 'order' => 7],
+            ['name' => 'Theology', 'code' => 'THE', 'order' => 8],
+            ['name' => 'Deacon', 'code' => 'DEA', 'order' => 9],
+            ['name' => 'Ordained Priest', 'code' => 'PRI', 'order' => 10],
+            ['name' => 'Awaiting Tertianship', 'code' => 'AWT', 'order' => 11],
+            ['name' => 'In Tertianship', 'code' => 'TER', 'order' => 12],
+            ['name' => 'Awaiting Final Vows', 'code' => 'AFV', 'order' => 13],
         ];
 
         foreach ($stages as $stage) {
-            FormationStage::create($stage);
+            FormationStage::firstOrCreate(
+                ['code' => $stage['code']],
+                $stage
+            );
         }
     }
 } 

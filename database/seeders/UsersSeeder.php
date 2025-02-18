@@ -2,8 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{User, Province, Community, Role, RoleType};
-use Database\Factories\RoleAssignmentFactory;
+use App\Models\{User, Jesuit, Province, Community, RoleType};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -17,13 +16,29 @@ class UsersSeeder extends Seeder
             [
                 'name' => 'Admin User',
                 'password' => Hash::make('password'),
-                'type' => 'P',
+                'type' => 'admin',
+                'is_active' => true
             ]
         );
 
-        // Assign superadmin role through role_assignments if not already assigned
-        if (!$admin->roleAssignments()->where('role_type_id', RoleType::where('name', 'Provincial')->first()->id)->exists()) {
-            $admin->roleAssignments()->create([
+        // Create Jesuit record for admin
+        $adminJesuit = Jesuit::firstOrCreate(
+            ['user_id' => $admin->id],
+            [
+                'province_id' => Province::first()->id,
+                'code' => 'ADM001',
+                'category' => 'P',
+                'dob' => now()->subYears(40),
+                'joining_date' => now()->subYears(20),
+                'priesthood_date' => now()->subYears(10),
+                'status' => 'active',
+                'is_active' => true
+            ]
+        );
+
+        // Assign provincial role to admin's jesuit record
+        if (!$adminJesuit->roleAssignments()->where('role_type_id', RoleType::where('name', 'Provincial')->first()->id)->exists()) {
+            $adminJesuit->roleAssignments()->create([
                 'role_type_id' => RoleType::where('name', 'Provincial')->first()->id,
                 'assignable_type' => Province::class,
                 'assignable_id' => Province::first()->id,
@@ -41,14 +56,29 @@ class UsersSeeder extends Seeder
                 [
                     'name' => $province->name . ' Admin',
                     'password' => Hash::make('password'),
-                    'type' => 'P',
-                    'province_id' => $province->id,
+                    'type' => 'admin',
+                    'is_active' => true
                 ]
             );
 
-            // Assign province admin role if not already assigned
-            if (!$user->roleAssignments()->where('role_type_id', RoleType::where('name', 'Provincial')->first()->id)->exists()) {
-                $user->roleAssignments()->create([
+            // Create Jesuit record for province admin
+            $provinceJesuit = Jesuit::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'province_id' => $province->id,
+                    'code' => 'PA' . $province->code,
+                    'category' => 'P',
+                    'dob' => now()->subYears(rand(35, 50)),
+                    'joining_date' => now()->subYears(rand(15, 30)),
+                    'priesthood_date' => now()->subYears(rand(5, 15)),
+                    'status' => 'active',
+                    'is_active' => true
+                ]
+            );
+
+            // Assign provincial role
+            if (!$provinceJesuit->roleAssignments()->where('role_type_id', RoleType::where('name', 'Provincial')->first()->id)->exists()) {
+                $provinceJesuit->roleAssignments()->create([
                     'role_type_id' => RoleType::where('name', 'Provincial')->first()->id,
                     'assignable_type' => Province::class,
                     'assignable_id' => $province->id,
@@ -58,31 +88,23 @@ class UsersSeeder extends Seeder
             }
         });
 
-        // Create regular users only if we have less than 15
-        $userCount = User::count();
-        if ($userCount < 15) { // 15 = 1 superadmin + 6 province admins + 8 regular users
-            User::factory(15 - $userCount)->create()->each(function ($user) {
-                // Assign random formation stage
-                $user->formationHistory()->create([
-                    'stage_id' => rand(1, 13),
-                    'start_date' => now()->subMonths(rand(1, 24)),
-                ]);
-
-                // Create role assignments using factory
-                $roleTypes = RoleType::inRandomOrder()->limit(rand(1, 3))->get();
-                foreach ($roleTypes as $roleType) {
-                    try {
-                        $user->roleAssignments()->save(
-                            RoleAssignmentFactory::new()->make([
-                                'user_id' => $user->id,
-                                'role_type_id' => $roleType->id
-                            ])
-                        );
-                    } catch (\Exception $e) {
-                        continue; // Skip if unique constraint fails
-                    }
-                }
-            });
+        // Create regular users
+        if (User::count() < 15) {
+            User::factory(15 - User::count())
+                ->create(['type' => 'jesuit'])
+                ->each(function ($user) {
+                    // Create Jesuit record
+                    $jesuit = Jesuit::factory()->create(['user_id' => $user->id]);
+                    
+                    // Create initial history record
+                    $jesuit->histories()->create([
+                        'community_id' => $jesuit->current_community_id,
+                        'province_id' => $jesuit->province_id,
+                        'category' => $jesuit->category,
+                        'start_date' => now()->subMonths(rand(1, 24)),
+                        'status' => 'active'
+                    ]);
+                });
         }
     }
 } 

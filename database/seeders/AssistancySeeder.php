@@ -10,18 +10,48 @@ class AssistancySeeder extends Seeder
     public function run(): void
     {
         $assistancies = [
-            ['name' => 'South Asia', 'code' => 'SAS'],
-            ['name' => 'East Asia and Oceania', 'code' => 'EAO'],
-            ['name' => 'Africa and Madagascar', 'code' => 'AFR'],
-            ['name' => 'Latin America - North', 'code' => 'LAN'],
-            ['name' => 'Latin America - South', 'code' => 'LAS'],
-            ['name' => 'Europe - South', 'code' => 'EUS'],
-            ['name' => 'Europe - Central and East', 'code' => 'ECE'],
-            ['name' => 'North America', 'code' => 'NAM'],
+            [
+                'name' => 'South Asia',
+                'code' => 'SAA',
+                'description' => 'South Asian Assistancy'
+            ],
+            [
+                'name' => 'East Asia',
+                'code' => 'EAA',
+                'description' => 'East Asian Assistancy'
+            ],
+            [
+                'name' => 'Africa',
+                'code' => 'AFR',
+                'description' => 'African Assistancy'
+            ],
+            [
+                'name' => 'Latin America',
+                'code' => 'LAM',
+                'description' => 'Latin American Assistancy'
+            ],
+            [
+                'name' => 'Europe',
+                'code' => 'EUR',
+                'description' => 'European Assistancy'
+            ],
+            [
+                'name' => 'North America',
+                'code' => 'NAM',
+                'description' => 'North American Assistancy'
+            ], 
+            [
+                'name' => 'Oceania',
+                'code' => 'OCE',
+                'description' => 'Oceanian Assistancy'
+            ],
         ];
 
         foreach ($assistancies as $assistancy) {
-            Assistancy::create($assistancy);
+            Assistancy::firstOrCreate(
+                ['code' => $assistancy['code']],
+                $assistancy
+            );
         }
     }
 } 

@@ -10,13 +10,16 @@ class RegionSeeder extends Seeder
     public function run(): void
     {
         $regions = [
-            ['name' => 'Kohima' , 'code' => 'KHM',  'province_id' => 1],
-            ];
+            // Karnataka Province Regions
+            ['name' => 'Kohima', 'code' => 'KHM', 'province_id' => 1],
+            // Madurai Province Regions
+            ['name' => 'Nepal', 'code' => 'NEP', 'province_id' => 2]
+        ];
 
         foreach ($regions as $region) {
             Region::firstOrCreate(
                 ['code' => $region['code']],
-                array_merge($region, ['is_active' => true])
+                $region
             );
         }
     }

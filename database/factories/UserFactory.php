@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Province;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -16,10 +15,9 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => bcrypt('password'),
             'remember_token' => Str::random(10),
-            'type' => $this->faker->randomElement(['P', 'S', 'NS', 'F']),
-            'province_id' => Province::first()->id ?? Province::factory(),
-            'current_community_id' => null,
+            'type' => $this->faker->randomElement(['admin', 'staff', 'jesuit', 'guest']),
             'is_active' => true,
+            'phone' => $this->faker->phoneNumber()
         ];
     }
 }

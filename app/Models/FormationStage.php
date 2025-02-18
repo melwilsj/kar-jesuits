@@ -9,19 +9,29 @@ class FormationStage extends Model
 {
     protected $fillable = [
         'name',
-        'order',
-        'has_years',
-        'max_years'
+        'code',
+        'description',
+        'order'
     ];
 
     protected $casts = [
-        'has_years' => 'boolean',
-        'order' => 'integer',
-        'max_years' => 'integer'
+        'order' => 'integer'
     ];
 
-    public function formations(): HasMany
+    public function jesuitHistories(): HasMany
     {
-        return $this->hasMany(JesuitFormation::class, 'stage_id');
+        return $this->hasMany(JesuitHistory::class, 'formation_stage_id');
+    }
+
+    public function activeJesuits()
+    {
+        return $this->jesuitHistories()
+            ->where('is_active', true)
+            ->whereNull('end_date');
+    }
+
+    public function hasYears(): bool
+    {
+        return in_array($this->code, ['COL', 'PHI', 'REG', 'PG', 'THE']);
     }
 } 

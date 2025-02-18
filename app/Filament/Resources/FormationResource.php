@@ -7,6 +7,7 @@ use App\Models\JesuitFormation;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\FormationStage;
 
 class FormationResource extends Resource
 {
@@ -27,7 +28,9 @@ class FormationResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('current_year')
                     ->numeric()
-                    ->minValue(1),
+                    ->minValue(1)
+                    ->visible(fn (callable $get) => 
+                        FormationStage::find($get('stage_id'))?->hasYears()),
                 Forms\Components\DatePicker::make('start_date')
                     ->required(),
                 Forms\Components\DatePicker::make('end_date'),

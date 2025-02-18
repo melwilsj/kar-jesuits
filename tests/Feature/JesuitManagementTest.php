@@ -36,7 +36,7 @@ class JesuitManagementTest extends TestCase
         
         $province = Province::first();
         $admin = User::factory()
-            ->create(['province_id' => $province->id])
+            ->create()
             ->assignRole('province_admin');
         
         $response = $this->actingAs($admin)->get("/admin/provinces/{$province->id}/members");
@@ -57,9 +57,9 @@ class JesuitManagementTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('jesuit_formations', [
-            'user_id' => $user->id,
-            'stage_id' => 1
+        $this->assertDatabaseHas('jesuit_histories', [
+            'jesuit_id' => $user->jesuit->id,
+            'formation_stage_id' => 1
         ]);
     }
 } 

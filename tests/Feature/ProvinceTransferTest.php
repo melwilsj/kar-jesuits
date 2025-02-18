@@ -30,7 +30,7 @@ class ProvinceTransferTest extends TestCase
 
         $response->assertSuccessful();
         $this->assertDatabaseHas('province_transfers', [
-            'user_id' => $jesuit->id,
+            'jesuit_id' => $jesuit->jesuit->id,
             'from_province_id' => $fromProvince->id,
             'to_province_id' => $toProvince->id,
             'status' => 'pending'

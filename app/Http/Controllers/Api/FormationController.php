@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\{User, JesuitFormation, FormationStage};
+use App\Models\{User, FormationStage};
 use Illuminate\Http\Request;
 
 class FormationController extends BaseController
@@ -14,29 +14,34 @@ class FormationController extends BaseController
         }
 
         $validated = $request->validate([
-            'stage_id' => 'required|exists:formation_stages,id',
-            'current_year' => 'nullable|integer|min:1',
             'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date'
+            'end_date' => 'nullable|date|after:start_date',
+            'status' => 'nullable|string',
+            'remarks' => 'nullable|string'
         ]);
 
-        // End current formation stage if exists
-        $user->currentFormation?->update(['end_date' => now()]);
+        // Create new history entry
+        $history = $user->jesuit->histories()->create([
+            'community_id' => $user->jesuit->current_community_id,
+            'province_id' => $user->jesuit->province_id,
+            'category' => $user->jesuit->category,
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'status' => $validated['status'],
+            'remarks' => $validated['remarks']
+        ]);
 
-        // Create new formation stage
-        $formation = $user->formationHistory()->create($validated);
-
-        return $this->successResponse($formation->load('stage'), 'Formation stage updated successfully');
+        return $this->successResponse($history, 'History updated successfully');
     }
 
-    public function formationHistory(Request $request, User $user)
+    public function history(Request $request, User $user)
     {
         if (!$request->user()->canViewMemberDetails($user)) {
             return $this->errorResponse('Unauthorized', 403);
         }
 
-        return $this->successResponse($user->formationHistory()
-            ->with('stage')
+        return $this->successResponse($user->jesuit->histories()
+            ->with(['community', 'province'])
             ->orderBy('start_date', 'desc')
             ->get());
     }

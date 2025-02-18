@@ -14,7 +14,7 @@ class CommunitiesSeeder extends Seeder
             Community::factory(rand(2, 3))
                 ->create(['province_id' => $province->id])
                 ->each(function ($community) {
-                    // Create institutions for each community
+                    // Create institutions
                     $community->institutions()->saveMany(
                         InstitutionFactory::times(rand(1, 3))->make()
                     );

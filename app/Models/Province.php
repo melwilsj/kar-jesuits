@@ -4,21 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Province extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'description', 'assistancy_id', 'is_active'];
+    protected $fillable = [
+        'name',
+        'code',
+        'description',
+        'assistancy_id',
+        'is_active'
+    ];
 
     protected $casts = [
         'is_active' => 'boolean'
     ];
 
-    public function members(): HasMany
+    public function assistancy(): BelongsTo
     {
-        return $this->hasMany(User::class);
+        return $this->belongsTo(Assistancy::class);
+    }
+
+    public function jesuits(): HasMany
+    {
+        return $this->hasMany(Jesuit::class);
     }
 
     public function regions(): HasMany
@@ -36,8 +49,23 @@ class Province extends Model
         return $this->hasMany(Commission::class);
     }
 
-    public function groups(): HasMany
+    public function roleAssignments(): MorphMany
     {
-        return $this->hasMany(Group::class);
+        return $this->morphMany(RoleAssignment::class, 'assignable');
+    }
+
+    public function incomingTransfers(): HasMany
+    {
+        return $this->hasMany(ProvinceTransfer::class, 'to_province_id');
+    }
+
+    public function outgoingTransfers(): HasMany
+    {
+        return $this->hasMany(ProvinceTransfer::class, 'from_province_id');
+    }
+
+    public function activeJesuits()
+    {
+        return $this->jesuits()->where('is_active', true);
     }
 }
