@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\{User, RoleAssignment, RoleType};
+use App\Models\{User, RoleAssignment, RoleType, Community};
 use Illuminate\Http\Request;
 
 class RoleAssignmentController extends BaseController
 {
     public function assign(Request $request, User $user)
     {
-        if (!$request->user()->hasRole(['superadmin', 'province_admin'])) {
-            return $this->errorResponse('Unauthorized', 403);
-        }
-
         $validated = $request->validate([
             'role_type_id' => 'required|exists:role_types,id',
             'assignable_type' => 'required|in:community,institution,province',
@@ -22,17 +18,24 @@ class RoleAssignmentController extends BaseController
             'notes' => 'nullable|string'
         ]);
 
-        // End current active role of same type if exists
-        $user->activeRoles()
+        $this->authorize('create', [
+            RoleAssignment::class, 
+            $validated['assignable_type'], 
+            $validated['assignable_id']
+        ]);
+
+        // End current active roles
+        $user->roleAssignments()
             ->where('role_type_id', $validated['role_type_id'])
             ->where('assignable_type', $validated['assignable_type'])
             ->where('assignable_id', $validated['assignable_id'])
-            ->update(['end_date' => now(), 'is_active' => false]);
+            ->where('is_active', true)
+            ->update(['is_active' => false, 'end_date' => now()]);
 
-        $assignment = $user->roleAssignments()->create($validated);
+        $assignment = $user->roleAssignments()->create($validated + ['is_active' => true]);
 
         return $this->successResponse(
-            $assignment->load(['roleType', 'assignable']), 
+            $assignment->load(['roleType', 'assignable']),
             'Role assigned successfully'
         );
     }

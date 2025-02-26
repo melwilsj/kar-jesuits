@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProvinceTransfer extends Model
+class ProvinceTransfer extends BaseModel
 {
     use SoftDeletes;
 

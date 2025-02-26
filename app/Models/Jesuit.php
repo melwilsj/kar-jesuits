@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Constants\RoleTypes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Jesuit extends Model
+class Jesuit extends BaseModel
 {
     use SoftDeletes, HasFactory;
 
@@ -42,6 +44,13 @@ class Jesuit extends Model
         'academic_qualifications' => 'array',
         'publications' => 'array',
         'languages' => 'array'
+    ];
+
+    protected $timeTravelRelations = [
+        'user',
+        'province',
+        'currentCommunity',
+        'roleAssignments'
     ];
 
     public function user(): BelongsTo
@@ -93,7 +102,7 @@ class Jesuit extends Model
     {
         return $this->activeRoles()
             ->whereHasMorph('assignable', [Community::class])
-            ->whereIn('role_type_id', RoleType::whereIn('name', ['Superior', 'Rector'])->pluck('id'))
+            ->whereIn('role_type_id', RoleType::whereIn('name', RoleTypes::SUPERIOR_ROLES)->pluck('id'))
             ->exists();
     }
 
@@ -116,5 +125,50 @@ class Jesuit extends Model
     public function histories(): HasMany
     {
         return $this->hasMany(JesuitHistory::class);
+    }
+
+    public function canBeAssignedTo(Community $community): bool
+    {
+        if ($community->isCommonHouse()) {
+            // Any Jesuit can be assigned to common houses
+            return true;
+        }
+
+        // For regular communities, Jesuit must be from same province
+        return $this->province_id === $community->province_id;
+    }
+
+    public function assignToCommunity(Community $community, string $status = 'Member', ?string $startDate = null): void
+    {
+        $startDate = $startDate ?? now();
+
+        // End current community assignment if exists
+        if ($this->current_community_id) {
+            JesuitHistory::create([
+                'jesuit_id' => $this->id,
+                'community_id' => $this->current_community_id,
+                'province_id' => $this->currentCommunity->isCommonHouse() ? null : $this->province_id,
+                'assistancy_id' => $this->currentCommunity->isCommonHouse() ? $this->currentCommunity->assistancy_id : null,
+                'category' => $this->category,
+                'start_date' => $this->histories()->latest()->first()?->start_date ?? $startDate,
+                'end_date' => $startDate,
+                'status' => $status,
+                'remarks' => 'Transfer out'
+            ]);
+        }
+
+        // Create new assignment
+        $this->update(['current_community_id' => $community->id]);
+
+        JesuitHistory::create([
+            'jesuit_id' => $this->id,
+            'community_id' => $community->id,
+            'province_id' => $community->isCommonHouse() ? null : $this->province_id,
+            'assistancy_id' => $community->isCommonHouse() ? $community->assistancy_id : null,
+            'category' => $this->category,
+            'start_date' => $startDate,
+            'status' => $status,
+            'remarks' => 'New assignment'
+        ]);
     }
 } 

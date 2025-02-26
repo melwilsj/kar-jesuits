@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class FormationStage extends Model
+class FormationStage extends BaseModel
 {
     protected $fillable = [
         'name',

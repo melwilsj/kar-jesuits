@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DocumentCategory extends Model
+class DocumentCategory extends BaseModel
 {
     protected $fillable = [
         'name',

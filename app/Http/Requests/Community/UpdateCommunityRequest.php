@@ -13,18 +13,31 @@ class UpdateCommunityRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $community = $this->route('community');
+        
+        $rules = [
             'name' => 'sometimes|string|max:255',
-            'code' => 'sometimes|string|unique:communities,code,' . $this->route('community')->id,
-            'province_id' => 'sometimes|exists:provinces,id',
-            'region_id' => 'nullable|exists:regions,id',
-            'superior_id' => 'nullable|exists:users,id',
+            'code' => 'sometimes|string|unique:communities,code,' . $community->id,
             'address' => 'sometimes|string',
+            'diocese' => 'nullable|string',
+            'taluk' => 'nullable|string',
+            'district' => 'nullable|string',
+            'state' => 'nullable|string',
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
-            'superior_type' => 'sometimes|in:rector,superior,coordinator',
+            'superior_type' => 'sometimes|in:Superior,Rector,Coordinator',
             'is_formation_house' => 'sometimes|boolean',
             'is_active' => 'sometimes|boolean'
         ];
+
+        if ($community->isCommonHouse()) {
+            $rules['assistancy_id'] = 'sometimes|exists:assistancies,id';
+        } else {
+            $rules['province_id'] = 'sometimes|exists:provinces,id';
+            $rules['region_id'] = 'nullable|exists:regions,id';
+            $rules['is_attached_house'] = 'sometimes|boolean';
+        }
+
+        return $rules;
     }
 } 

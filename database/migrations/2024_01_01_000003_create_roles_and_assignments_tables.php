@@ -43,7 +43,7 @@ return new class extends Migration
         Schema::create('role_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('category', ['province', 'community', 'institution', 'commission']);
+            $table->enum('category', ['assistancy', 'province', 'community', 'institution', 'commission']);
             $table->text('description')->nullable();
             $table->timestamps();
         });

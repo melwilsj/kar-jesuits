@@ -27,8 +27,10 @@ return new class extends Migration
             $table->string('file_path');
             $table->string('file_type');
             $table->bigInteger('file_size');
-            $table->boolean('is_private')->default(true);
             $table->json('metadata')->nullable();
+            $table->enum('visibility', ['protected', 'private', 'public'])->default('private');
+            $table->morphs('documentable'); // For commission/group specific docs
+            $table->string('storage_provider')->default('r2');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -27,6 +27,13 @@ trait HasRolesAndPermissions
             ->toArray();
     }
 
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()
+            ->where('slug', $role)
+            ->exists();
+    }
+
     public function hasPermissionTo(string $permission): bool
     {
         return $this->hasPermission($permission);
@@ -39,5 +46,10 @@ trait HasRolesAndPermissions
                 $query->where('slug', $permission);
             })
             ->exists();
+    }
+
+    protected function hasPermission(string $permission): bool
+    {
+        return in_array($permission, $this->permissions());
     }
 } 

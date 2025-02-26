@@ -15,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Authenticatable
+class User extends AuthenticatableModel
 {
     use HasApiTokens,
         HasRolesAndPermissions,
@@ -30,15 +30,19 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'phone',
         'password',
         'type',
-        'is_active'
+        'is_active',
+        'phone_number',
+        'firebase_uid',
+        'auth_provider'
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'firebase_uid',
+        'google_id'
     ];
 
     protected $casts = [
@@ -78,12 +82,36 @@ class User extends Authenticatable
 
     public function canViewMemberDetails(User $member): bool
     {
-        if ($this->hasRole('superadmin')) return true;
-        
-        if ($this->isProvincial() && $member->jesuit?->province_id === $this->jesuit?->province_id) return true;
-        
-        if ($this->isSuperior() && $member->jesuit?->current_community_id === $this->jesuit?->current_community_id) return true;
-        
-        return false;
+        if ($this->hasRole('superadmin')) {
+            return true;
+        }
+
+        if ($this->isPOSA() && $member->jesuit?->currentCommunity?->isCommonHouse()) {
+            return true;
+        }
+
+        if ($member->jesuit?->currentCommunity?->isCommonHouse()) {
+            return false;
+        }
+
+        return $this->canAccessProvince($member->jesuit?->province);
+    }
+
+    public function isPOSA(): bool
+    {
+        if ($this->hasRole('superadmin')) {
+            return true;
+        }
+
+        return $this->jesuit?->activeRoles()
+            ->whereHasMorph('assignable', [Assistancy::class])
+            ->where('role_type_id', RoleType::where('name', 'POSA')->first()->id)
+            ->exists() ?? false;
+    }
+
+    // Add new method for Firebase auth
+    public function isFirebaseUser(): bool
+    {
+        return $this->auth_provider === 'firebase' || $this->auth_provider === 'google';
     }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class JesuitHistory extends Model
+class JesuitHistory extends BaseModel
 {
     use HasFactory;
 

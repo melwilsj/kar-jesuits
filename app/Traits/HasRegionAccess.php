@@ -3,24 +3,22 @@
 namespace App\Traits;
 
 use App\Models\Region;
+use App\Models\RoleType;
 
 trait HasRegionAccess
 {
     public function canAccessRegion(Region $region): bool
     {
-        if ($this->hasRole('superadmin') || $this->canAccessProvince($region->province)) {
+        if ($this->hasRole('superadmin')) {
             return true;
         }
 
-        if ($this->hasRole('region_admin')) {
-            return $this->regions->contains($region);
+        if ($this->isProvincial()) {
+            return $this->jesuit->province->regions->contains($region);
         }
 
-        if ($this->hasRole('community_superior')) {
-            return $this->managedCommunities->pluck('region_id')->contains($region->id);
-        }
-
-        return false;
+        // Regional superior can only access their own region
+        return $this->managedRegions->contains($region);
     }
 
     public function canManageRegion(Region $region): bool
@@ -28,5 +26,14 @@ trait HasRegionAccess
         return $this->hasRole('superadmin') || 
             ($this->hasRole('province_admin') && $this->provinces->contains($region->province)) ||
             ($this->hasRole('region_admin') && $this->regions->contains($region));
+    }
+
+    public function managedRegions()
+    {
+        return $this->jesuit?->activeRoles()
+            ->whereHasMorph('assignable', [Region::class])
+            ->where('role_type_id', RoleType::where('name', 'Regional Superior')->first()->id)
+            ->get()
+            ->map(fn($role) => $role->assignable);
     }
 }

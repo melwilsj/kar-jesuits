@@ -49,8 +49,9 @@ return new class extends Migration
         Schema::create('jesuit_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('jesuit_id')->constrained();
-            $table->foreignId('community_id')->constrained();
-            $table->foreignId('province_id')->constrained();
+            $table->foreignId('community_id')->nullable()->constrained();
+            $table->foreignId('province_id')->nullable()->constrained();
+            $table->foreignId('assistancy_id')->nullable()->constrained();
             $table->enum('category', ['Bp', 'P', 'S', 'NS', 'F']);
             $table->date('start_date');
             $table->date('end_date')->nullable();

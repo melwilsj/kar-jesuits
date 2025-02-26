@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Commission extends Model
+class Commission extends BaseModel
 {
     use SoftDeletes;
 
@@ -37,5 +37,36 @@ class Commission extends Model
         return $this->roleAssignments()
             ->where('is_active', true)
             ->whereNull('end_date');
+    }
+
+    public function assignHead(Jesuit $jesuit, ?string $startDate = null)
+    {
+        $startDate = $startDate ?? now();
+        
+        // End current head's role if exists
+        $this->members()
+            ->where('is_head', true)
+            ->where('is_active', true)
+            ->update([
+                'is_active' => false,
+                'end_date' => $startDate
+            ]);
+        
+        // Create new head assignment
+        return $this->members()->create([
+            'jesuit_id' => $jesuit->id,
+            'is_head' => true,
+            'start_date' => $startDate,
+            'is_active' => true
+        ]);
+    }
+
+    public function currentHead()
+    {
+        return $this->members()
+            ->where('is_head', true)
+            ->where('is_active', true)
+            ->first()
+            ?->jesuit;
     }
 } 

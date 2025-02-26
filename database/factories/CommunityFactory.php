@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\{Province, Region};
+use App\Models\{Province, Region, Assistancy};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CommunityFactory extends Factory
@@ -10,33 +10,46 @@ class CommunityFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company(),
-            'code' => 'COM-' . $this->faker->unique()->numerify('#####'),
-            'province_id' => fn() => Province::inRandomOrder()->first()->id,
-            'region_id' => function (array $attributes) {
-                return Region::where('province_id', $attributes['province_id'])
-                    ->inRandomOrder()
-                    ->first()?->id;
-            },
-            'parent_community_id' => null,
-            'superior_type' => $this->faker->randomElement(['rector', 'superior', 'coordinator']),
-            'address' => $this->faker->address(),
-            'diocese' => $this->faker->city(),
-            'taluk' => $this->faker->city(),
-            'district' => $this->faker->city(),
-            'state' => $this->faker->state(),
-            'phone' => $this->faker->phoneNumber(),
-            'email' => $this->faker->companyEmail(),
-            'is_formation_house' => $this->faker->boolean(20),
-            'is_attached_house' => $this->faker->boolean(10),
+            'name' => $this->faker->company,
+            'code' => $this->faker->unique()->regexify('[A-Z]{3}[0-9]{3}'),
+            'province_id' => Province::factory(),
+            'superior_type' => $this->faker->randomElement(['Superior', 'Rector', 'Coordinator']),
+            'address' => $this->faker->address,
+            'diocese' => $this->faker->city,
+            'taluk' => $this->faker->city,
+            'district' => $this->faker->city,
+            'state' => $this->faker->state,
+            'phone' => $this->faker->phoneNumber,
+            'email' => $this->faker->email,
+            'is_formation_house' => false,
+            'is_attached_house' => false,
+            'is_common_house' => false,
             'is_active' => true
         ];
     }
 
-    public function formationHouse()
+    public function formationHouse(): self
     {
         return $this->state(fn (array $attributes) => [
             'is_formation_house' => true
+        ]);
+    }
+
+    public function attachedHouse(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_attached_house' => true,
+            'superior_type' => 'Coordinator'
+        ]);
+    }
+
+    public function commonHouse(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'province_id' => null,
+            'region_id' => null,
+            'assistancy_id' => fn() => Assistancy::factory()->create()->id,
+            'is_common_house' => true
         ]);
     }
 } 

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -14,19 +15,6 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->text('description')->nullable();
             $table->timestamps();
-        });
-
-        Schema::create('common_houses', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('code')->unique();
-            $table->foreignId('assistancy_id')->constrained();
-            $table->text('address');
-            $table->json('contact_details')->nullable()->comment('Array of phones, emails, fax, website');
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::create('provinces', function (Blueprint $table) {
@@ -53,11 +41,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('code')->unique();
-            $table->foreignId('province_id')->constrained();
+            $table->foreignId('province_id')->nullable()->constrained();
             $table->foreignId('region_id')->nullable()->constrained();
-            $table->foreignId('parent_community_id')->nullable()->constrained('communities');
-            $table->enum('superior_type', ['rector', 'superior', 'coordinator'])->nullable();
-            $table->text('address');
+            $table->foreignId('assistancy_id')->nullable()->constrained();
+            $table->foreignId('parent_community_id')->nullable()
+                ->references('id')->on('communities');
+            $table->enum('superior_type', ['Superior', 'Rector', 'Coordinator']);
+            $table->string('address');
             $table->string('diocese')->nullable();
             $table->string('taluk')->nullable();
             $table->string('district')->nullable();
@@ -65,11 +55,21 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->boolean('is_formation_house')->default(false);
+            $table->boolean('is_common_house')->default(false);
             $table->boolean('is_attached_house')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });
+
+        // Add the check constraints using raw SQL after table creation
+        DB::statement("ALTER TABLE communities ADD CONSTRAINT chk_attached_house_coordinator 
+            CHECK ((is_attached_house = true AND superior_type = 'Coordinator') OR (is_attached_house = false))");
+
+        DB::statement("ALTER TABLE communities ADD CONSTRAINT chk_community_hierarchy 
+            CHECK ((province_id IS NOT NULL AND assistancy_id IS NULL) OR 
+                   (province_id IS NULL AND assistancy_id IS NOT NULL) OR 
+                   (province_id IS NULL AND assistancy_id IS NULL AND parent_community_id IS NOT NULL))");
 
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();

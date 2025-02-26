@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class RoleAssignment extends Model
+class RoleAssignment extends BaseModel
 {
     use SoftDeletes;
 
@@ -27,6 +27,21 @@ class RoleAssignment extends Model
         'end_date' => 'date',
         'is_active' => 'boolean'
     ];
+
+    protected static function booted()
+    {
+        static::created(function ($assignment) {
+            if ($assignment->assignable_type === Community::class) {
+                $assignment->assignable->createSnapshot($assignment->assignable, 'update');
+            }
+        });
+
+        static::updated(function ($assignment) {
+            if ($assignment->assignable_type === Community::class) {
+                $assignment->assignable->createSnapshot($assignment->assignable, 'update');
+            }
+        });
+    }
 
     public function jesuit(): BelongsTo
     {

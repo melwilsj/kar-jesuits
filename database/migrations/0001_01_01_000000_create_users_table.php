@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable()->unique();
+            $table->string('phone_number')->nullable()->unique();
             $table->timestamp('phone_verified_at')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -24,6 +24,9 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+            $table->string('firebase_uid')->nullable()->unique();
+            $table->enum('auth_provider', ['email', 'firebase', 'google'])->default('email');
+            $table->string('google_id')->nullable()->unique();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

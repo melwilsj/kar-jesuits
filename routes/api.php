@@ -17,15 +17,33 @@ use App\Http\Controllers\Api\{
     RoleAssignmentController,
     DocumentController,
     ExternalAssignmentController,
-    ProvinceTransferController
+    ProvinceTransferController,
+    TimeTravelController
 };
+use App\Http\Controllers\Auth\FirebaseAuthController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\MobileAuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
+// Legacy auth endpoints (to be deprecated)
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/phone/verify', [AuthController::class, 'verifyPhone']);
 
+// Public Firebase Authentication endpoints
+Route::prefix('auth')->group(function () {
+    Route::post('/verify-token', [FirebaseAuthController::class, 'verifyToken']);
+    Route::post('/verify-phone', [FirebaseAuthController::class, 'verifyPhoneNumber']);
+    Route::post('/phone/login', [FirebaseAuthController::class, 'verifyToken']);
+    Route::post('/google/login', [FirebaseAuthController::class, 'verifyToken']);
+});
+
+// Protected routes with Sanctum authentication
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/logout', [FirebaseAuthController::class, 'logout']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
     
     // User management routes
     Route::apiResource('users', UserController::class);
@@ -77,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/statistics', [DashboardController::class, 'getStatistics']);
     
     // Bulk operations routes
-    Route::middleware('role:superadmin')->group(function () {
+    Route::middleware('superadmin')->group(function () {
         Route::post('/bulk/delete', [BulkOperationsController::class, 'bulkDelete']);
     });
 
@@ -106,4 +124,44 @@ Route::middleware('auth:sanctum')->group(function () {
     // Province Transfers
     Route::post('jesuits/{user}/transfer-request', [ProvinceTransferController::class, 'request']);
     Route::patch('transfers/{transfer}', [ProvinceTransferController::class, 'updateStatus']);
+
+    // Time travel routes
+    Route::prefix('time-travel')->group(function () {
+        Route::post('/state', [TimeTravelController::class, 'getStateAt']);
+        Route::get('/history/{model_type}/{model_id}', [TimeTravelController::class, 'getModelHistory']);
+    });
+    
+    // User profile
+    Route::get('profile', [ProfileController::class, 'show']);
+    Route::put('profile', [ProfileController::class, 'update']);
+});
+
+// V1 API (Versioned API with consistent Firebase auth)
+Route::prefix('v1')->group(function () {
+    // Public auth endpoints
+    Route::post('auth/phone/login', [FirebaseAuthController::class, 'phoneLogin']);
+    Route::post('auth/google/login', [FirebaseAuthController::class, 'googleLogin']);
+    
+    // Protected routes
+    Route::middleware(['auth:sanctum', 'auth.firebase'])->group(function () {
+        Route::post('auth/logout', [FirebaseAuthController::class, 'logout']);
+        
+        // User profile
+        Route::get('profile', [ProfileController::class, 'show']);
+        Route::put('profile', [ProfileController::class, 'update']);
+        
+        // Other protected routes can be added here
+    });
+});
+
+// Firebase Auth routes for mobile app
+Route::prefix('auth')->group(function () {
+    Route::post('/phone-login', [MobileAuthController::class, 'phoneLogin']);
+    Route::post('/google-login', [MobileAuthController::class, 'googleLogin']);
+    
+    // Protected routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/user', [MobileAuthController::class, 'getUser']);
+        Route::post('/logout', [MobileAuthController::class, 'logout']);
+    });
 });

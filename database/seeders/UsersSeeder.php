@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{User, Jesuit, Province, Community, RoleType};
+use App\Models\{User, Jesuit, Province, Community, RoleType, Assistancy, Role};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -10,81 +10,131 @@ class UsersSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create admin user if doesn't exist
-        $admin = User::firstOrCreate(
+        // Create superadmin user if doesn't exist
+        $superadmin = User::firstOrCreate(
             ['email' => 'melwilsj@jesuits.net'],
             [
-                'name' => 'Admin User',
+                'name' => 'Super Admin',
                 'password' => Hash::make('password'),
                 'type' => 'admin',
                 'is_active' => true
             ]
         );
 
-        // Create Jesuit record for admin
-        $adminJesuit = Jesuit::firstOrCreate(
-            ['user_id' => $admin->id],
+        // Assign superadmin role
+        $superadminRole = Role::where('slug', 'superadmin')->first();
+        $superadmin->roles()->syncWithoutDetaching([$superadminRole->id]);
+
+        // Create POSA user
+        $posaUser = User::firstOrCreate(
+            ['email' => 'posa@jesuits.net'],
+            [
+                'name' => 'POSA',
+                'password' => Hash::make('password'),
+                'type' => 'admin',
+                'is_active' => true
+            ]
+        );
+
+        // Create Jesuit record for POSA
+        $posaJesuit = Jesuit::firstOrCreate(
+            ['user_id' => $posaUser->id],
             [
                 'province_id' => Province::first()->id,
-                'code' => 'ADM001',
+                'code' => 'POSA001',
                 'category' => 'P',
-                'dob' => now()->subYears(40),
-                'joining_date' => now()->subYears(20),
-                'priesthood_date' => now()->subYears(10),
+                'dob' => now()->subYears(50),
+                'joining_date' => now()->subYears(30),
+                'priesthood_date' => now()->subYears(20),
                 'status' => 'active',
                 'is_active' => true
             ]
         );
 
-        // Assign provincial role to admin's jesuit record
-        if (!$adminJesuit->roleAssignments()->where('role_type_id', RoleType::where('name', 'Provincial')->first()->id)->exists()) {
-            $adminJesuit->roleAssignments()->create([
-                'role_type_id' => RoleType::where('name', 'Provincial')->first()->id,
-                'assignable_type' => Province::class,
-                'assignable_id' => Province::first()->id,
+        // Assign POSA role
+        $posaRoleType = RoleType::where('name', 'POSA')->first();
+        if (!$posaJesuit->roleAssignments()->where('role_type_id', $posaRoleType->id)->exists()) {
+            $posaJesuit->roleAssignments()->create([
+                'role_type_id' => $posaRoleType->id,
+                'assignable_type' => Assistancy::class,
+                'assignable_id' => Assistancy::first()->id,
                 'start_date' => now(),
                 'is_active' => true,
             ]);
         }
 
-        // Create province admins
+        // Create one Provincial and two admins for each province
         Province::all()->each(function ($province) {
-            $email = 'admin.' . strtolower($province->code) . '@jesuits.net';
-            
-            $user = User::firstOrCreate(
-                ['email' => $email],
+            // Create Provincial
+            $provincialUser = User::firstOrCreate(
+                ['email' => 'provincial.' . strtolower($province->code) . '@jesuits.net'],
                 [
-                    'name' => $province->name . ' Admin',
+                    'name' => $province->name . ' Provincial',
                     'password' => Hash::make('password'),
                     'type' => 'admin',
                     'is_active' => true
                 ]
             );
 
-            // Create Jesuit record for province admin
-            $provinceJesuit = Jesuit::firstOrCreate(
-                ['user_id' => $user->id],
+            // Create Jesuit record for Provincial
+            $provincialJesuit = Jesuit::firstOrCreate(
+                ['user_id' => $provincialUser->id],
                 [
                     'province_id' => $province->id,
-                    'code' => 'PA' . $province->code,
+                    'code' => 'PR' . $province->code,
                     'category' => 'P',
-                    'dob' => now()->subYears(rand(35, 50)),
-                    'joining_date' => now()->subYears(rand(15, 30)),
-                    'priesthood_date' => now()->subYears(rand(5, 15)),
+                    'dob' => now()->subYears(45),
+                    'joining_date' => now()->subYears(25),
+                    'priesthood_date' => now()->subYears(15),
                     'status' => 'active',
                     'is_active' => true
                 ]
             );
 
-            // Assign provincial role
-            if (!$provinceJesuit->roleAssignments()->where('role_type_id', RoleType::where('name', 'Provincial')->first()->id)->exists()) {
-                $provinceJesuit->roleAssignments()->create([
-                    'role_type_id' => RoleType::where('name', 'Provincial')->first()->id,
+            // Assign Provincial role
+            $provincialRoleType = RoleType::where('name', 'Provincial')->first();
+            if (!$provincialJesuit->roleAssignments()->where('role_type_id', $provincialRoleType->id)->exists()) {
+                $provincialJesuit->roleAssignments()->create([
+                    'role_type_id' => $provincialRoleType->id,
                     'assignable_type' => Province::class,
                     'assignable_id' => $province->id,
                     'start_date' => now(),
                     'is_active' => true,
                 ]);
+            }
+
+            // Create province admins
+            for ($i = 1; $i <= 2; $i++) {
+                $email = 'admin' . $i . '.' . strtolower($province->code) . '@jesuits.net';
+                
+                $user = User::firstOrCreate(
+                    ['email' => $email],
+                    [
+                        'name' => $province->name . ' Admin ' . $i,
+                        'password' => Hash::make('password'),
+                        'type' => 'admin',
+                        'is_active' => true
+                    ]
+                );
+
+                // Assign province_admin role
+                $provinceAdminRole = Role::where('slug', 'province_admin')->first();
+                $user->roles()->syncWithoutDetaching([$provinceAdminRole->id]);
+
+                // Create Jesuit record for province admin
+                Jesuit::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'province_id' => $province->id,
+                        'code' => 'PA' . $province->code . $i,
+                        'category' => 'P',
+                        'dob' => now()->subYears(rand(35, 50)),
+                        'joining_date' => now()->subYears(rand(15, 30)),
+                        'priesthood_date' => now()->subYears(rand(5, 15)),
+                        'status' => 'active',
+                        'is_active' => true
+                    ]
+                );
             }
         });
 
