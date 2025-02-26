@@ -16,7 +16,7 @@ class UsersSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('password'),
-                'type' => 'admin',
+                'type' => 'superadmin',
                 'is_active' => true
             ]
         );
@@ -27,7 +27,7 @@ class UsersSeeder extends Seeder
 
         // Create POSA user
         $posaUser = User::firstOrCreate(
-            ['email' => 'posa@jesuits.net'],
+            ['email' => 'sjipsb1@gmail.com'],
             [
                 'name' => 'POSA',
                 'password' => Hash::make('password'),
@@ -66,8 +66,14 @@ class UsersSeeder extends Seeder
         // Create one Provincial and two admins for each province
         Province::all()->each(function ($province) {
             // Create Provincial
+            // Override email for first province's Provincial
+            if ($province->id === Province::first()->id) {
+                $provincialEmail = 'sjipsb7@gmail.com';
+            } else {
+                $provincialEmail = 'provincial.' . strtolower($province->code) . '@jesuits.net';
+            }
             $provincialUser = User::firstOrCreate(
-                ['email' => 'provincial.' . strtolower($province->code) . '@jesuits.net'],
+                ['email' => $provincialEmail],
                 [
                     'name' => $province->name . ' Provincial',
                     'password' => Hash::make('password'),

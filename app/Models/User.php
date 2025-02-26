@@ -114,4 +114,14 @@ class User extends AuthenticatableModel
     {
         return $this->auth_provider === 'firebase' || $this->auth_provider === 'google';
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->type === 'admin' || $this->type === 'superadmin';
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->type === 'superadmin';
+    }
 }
