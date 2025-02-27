@@ -75,13 +75,30 @@ return new class extends Migration
             
             $table->index(['commission_id', 'is_head', 'is_active']);
         });
+
+        Schema::create('jesuit_formations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('jesuit_id')->constrained()->onDelete('cascade');
+            $table->foreignId('formation_stage_id')->constrained()->onDelete('cascade');
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->integer('current_year')->nullable();
+            $table->string('status')->default('active');
+            $table->text('notes')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['jesuit_id', 'formation_stage_id']);
+            $table->index(['status', 'start_date']);
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('jesuit_formations');
+        Schema::dropIfExists('commission_members');
         Schema::dropIfExists('jesuit_histories');
         Schema::dropIfExists('formation_stages');
         Schema::dropIfExists('jesuits');
-        Schema::dropIfExists('commission_members');
     }
 }; 

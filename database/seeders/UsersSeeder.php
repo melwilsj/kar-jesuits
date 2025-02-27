@@ -145,8 +145,8 @@ class UsersSeeder extends Seeder
         });
 
         // Create regular users
-        if (User::count() < 15) {
-            User::factory(15 - User::count())
+        if (User::count() < 100) {
+            User::factory(100 - User::count())
                 ->create(['type' => 'jesuit'])
                 ->each(function ($user) {
                     // Create Jesuit record

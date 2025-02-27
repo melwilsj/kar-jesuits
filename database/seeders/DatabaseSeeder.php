@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             CommunitiesSeeder::class,
             UsersSeeder::class,
             UpdateRelationshipsSeeder::class,
+            FormationSeeder::class,
         ]);
     }
 }

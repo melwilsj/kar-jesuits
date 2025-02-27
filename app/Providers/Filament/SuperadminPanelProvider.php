@@ -2,8 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Http\Middleware\AdminMiddleware;
-use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
@@ -17,35 +16,32 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Resources;
-use App\Http\Middleware\FilamentCustomAuth;
-
-class AdminPanelProvider extends PanelProvider
+use App\Http\Middleware\SuperadminMiddleware;
+class SuperadminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
+            ->id('superadmin')
+            ->path('superadmin')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Red,
             ])
-            ->brandName('Karnataka Jesuits Admin')
-            ->brandLogo(asset('images/ksj_logo.jpg'))
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Superadmin/Resources'), for: 'App\\Filament\\Superadmin\\Resources')
+            ->discoverPages(in: app_path('Filament/Superadmin/Pages'), for: 'App\\Filament\\Superadmin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Superadmin/Widgets'), for: 'App\\Filament\\Superadmin\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
@@ -53,16 +49,7 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
-                FilamentCustomAuth::class,
-                AdminMiddleware::class,
-            ])
-            ->resources([
-                Resources\UserResource::class,
-                Resources\CommunityResource::class,
-                Resources\JesuitResource::class,
-                Resources\DocumentResource::class,
-                Resources\InstitutionResource::class,
-                Resources\FormationResource::class,
+                SuperadminMiddleware::class,
             ]);
     }
 }

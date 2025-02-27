@@ -3,64 +3,62 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InstitutionResource\Pages;
+use App\Filament\Resources\InstitutionResource\RelationManagers;
 use App\Models\Institution;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InstitutionResource extends Resource
 {
     protected static ?string $model = Institution::class;
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
-    protected static ?string $navigationGroup = 'Administration';
 
-    public static function form(Forms\Form $form): Forms\Form
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Card::make()
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required(),
-                        Forms\Components\Select::make('community_id')
-                            ->relationship('community', 'name')
-                            ->required(),
-                        Forms\Components\Select::make('type')
-                            ->options([
-                                'school' => 'School',
-                                'parish' => 'Parish',
-                                'retreat_house' => 'Retreat House',
-                                'social_center' => 'Social Center',
-                                'other' => 'Other'
-                            ])
-                            ->required(),
-                        Forms\Components\Toggle::make('is_active')
-                            ->default(true),
-                        Forms\Components\Textarea::make('description')
-                            ->rows(3)
-                            ->columnSpan('full'),
-                    ])
-                    ->columns(2)
+                //
             ]);
     }
 
-    public static function table(Tables\Table $table): Tables\Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('community.name')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->formatStateUsing(fn (string $state): string => ucfirst(str_replace('_', ' ', $state))),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->boolean(),
+                //
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('community')
-                    ->relationship('community', 'name'),
-                Tables\Filters\SelectFilter::make('type'),
+                //
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
     }
-} 
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListInstitutions::route('/'),
+            'create' => Pages\CreateInstitution::route('/create'),
+            'edit' => Pages\EditInstitution::route('/{record}/edit'),
+        ];
+    }
+}

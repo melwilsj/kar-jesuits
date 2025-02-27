@@ -114,32 +114,42 @@ class FirebaseAuthController extends Controller
         // Log the user in
         Auth::login($user);
 
-        // Determine redirect based on user type
-        $redirect = '/dashboard';
-        if (in_array($user->type, ['admin', 'superadmin'])) {
-            $redirect = '/admin/dashboard';
+        // // Determine redirect based on user type
+        // $redirect = '/dashboard';
+        // if (in_array($user->type, ['admin', 'superadmin'])) {
+        //     $redirect = '/admin/dashboard';
+        // }
+
+        // // Generate API token for mobile app if requested
+        // $response = [
+        //     'success' => true,
+        //     'message' => 'Successfully authenticated',
+        //     'redirect' => $redirect
+        // ];
+
+        // // Add token for API access if requested
+        // if ($request->has('api_access') && $request->api_access) {
+        //     $response['token'] = $user->createToken('auth-token')->plainTextToken;
+        //     $response['user'] = [
+        //         'id' => $user->id,
+        //         'name' => $user->name,
+        //         'email' => $user->email,
+        //         'phone_number' => $user->phone_number,
+        //         'type' => $user->type
+        //     ];
+        // }
+        // return response()->json($response);
+        if ($user->isAdmin()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => '/admin'  // Redirect admins to Filament panel
+            ]);
         }
 
-        // Generate API token for mobile app if requested
-        $response = [
+        return response()->json([
             'success' => true,
-            'message' => 'Successfully authenticated',
-            'redirect' => $redirect
-        ];
-
-        // Add token for API access if requested
-        if ($request->has('api_access') && $request->api_access) {
-            $response['token'] = $user->createToken('auth-token')->plainTextToken;
-            $response['user'] = [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone_number' => $user->phone_number,
-                'type' => $user->type
-            ];
-        }
-
-        return response()->json($response);
+            'redirect' => '/'  // Regular users go to homepage
+        ]);
     }
 
     /**
@@ -190,6 +200,6 @@ class FirebaseAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/');
+        return redirect()->route('login');
     }
 } 

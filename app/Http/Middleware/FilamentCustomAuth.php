@@ -6,12 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AdminMiddleware
+class FilamentCustomAuth extends \Filament\Http\Middleware\Authenticate
 {
-    /**
-     * Handle an incoming request.
-     */
-    public function handle(Request $request, Closure $next)
+    public function handle($request, Closure $next, ...$guards)
     {
         if (!Auth::check()) {
             return redirect()->route('login');
@@ -19,8 +16,7 @@ class AdminMiddleware
 
         if (!Auth::user()->isAdmin()) {
             Auth::logout();
-            return redirect()->route('welcome')
-                ->with('error', 'You must be an administrator to access this area.');
+            return redirect()->route('login')->with('error', 'Unauthorized access.');
         }
 
         return $next($request);

@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class JesuitFormation extends BaseModel
 {
     protected $fillable = [
-        'user_id',
-        'stage_id',
+        'jesuit_id',
+        'formation_stage_id',
         'current_year',
         'start_date',
+        'status',
         'end_date'
     ];
 
@@ -21,13 +22,13 @@ class JesuitFormation extends BaseModel
         'current_year' => 'integer'
     ];
 
-    public function user(): BelongsTo
+    public function jesuit(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Jesuit::class);
     }
 
     public function stage(): BelongsTo
     {
-        return $this->belongsTo(FormationStage::class, 'stage_id');
+        return $this->belongsTo(FormationStage::class, 'formation_stage_id');
     }
 } 

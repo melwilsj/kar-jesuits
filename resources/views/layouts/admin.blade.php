@@ -1,3 +1,4 @@
+<!-- TODO: DELETE THIS FILE -->
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -24,6 +25,20 @@
                                 <img src="{{ asset('images/ksj_logo.jpg') }}" alt="Karnataka Jesuits Logo" class="h-12 w-auto">
                             </a>
                         </div>
+                    </div>
+
+                    <!-- Update the logout button -->
+                    <div class="flex items-center">
+                        @auth
+                            <form method="POST" action="{{ route('admin.logout') }}">
+                                @csrf
+                                <button type="submit" 
+                                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                >
+                                    Logout
+                                </button>
+                            </form>
+                        @endauth
                     </div>
                 </div>
             </div>

@@ -45,8 +45,15 @@
 <body class="antialiased">
     <div class="flex items-center justify-center min-h-screen bg-gray-100">
         <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-            <div class="flex justify-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-800">Jesuit Community Management System</h1>
+            <div class="flex items-center justify-between mb-8">
+                <a href="{{ route('welcome') }}" class="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Home
+                </a>
+                <h1 class="text-2xl font-bold text-gray-800">Login</h1>
+                <div class="w-14"><!-- Empty div for flex spacing --></div>
             </div>
 
             <!-- Login Options Container -->
@@ -62,16 +69,23 @@
                 </button>
                 
                 <!-- Google Login Button -->
-                <button id="google-login-btn" class="w-full py-3 px-4 bg-white hover:bg-gray-100 text-gray-800 font-semibold rounded-lg shadow border border-gray-300">
-                    <svg class="inline-block w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                            <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
-                            <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
-                            <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
-                            <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
-                        </g>
-                    </svg>
-                    Login with Google
+                <button id="google-login-btn" class="relative w-full py-3 px-4 bg-white hover:bg-gray-100 text-gray-800 font-semibold rounded-lg shadow border border-gray-300">
+                    <span class="normal-state flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                                <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+                                <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+                                <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+                                <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+                            </g>
+                        </svg>
+                        Login with Google
+                    </span>
+                    <span class="loading-state hidden absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                        <x-loading-indicator size="5" color="blue">
+                            Signing in... Please Wait...
+                        </x-loading-indicator>
+                    </span>
                 </button>
             </div>
 
@@ -95,9 +109,15 @@
                         <button type="button" id="back-to-login" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">
                             Back
                         </button>
-                        <button type="button" id="send-otp-btn" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg flex items-center" disabled>
-                            <span id="send-otp-loader" class="loader hidden"></span>
-                            <span id="send-otp-text">Send OTP</span>
+                        <button type="button" id="verify-phone-btn" class="relative w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg">
+                            <span class="normal-state flex items-center justify-center">
+                                Send OTP
+                            </span>
+                            <span class="loading-state hidden absolute inset-0 flex items-center justify-center bg-blue-500">
+                                <x-loading-indicator size="5">
+                                    Sending...
+                                </x-loading-indicator>
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -113,9 +133,15 @@
                         <button type="button" id="back-to-phone" class="py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg">
                             Back
                         </button>
-                        <button type="button" id="verify-otp-btn" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg flex items-center">
-                            <span id="verify-otp-loader" class="loader hidden"></span>
-                            <span id="verify-otp-text">Verify OTP</span>
+                        <button type="button" id="verify-otp-btn" class="relative w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg">
+                            <span class="normal-state flex items-center justify-center">
+                                Verify OTP
+                            </span>
+                            <span class="loading-state hidden absolute inset-0 flex items-center justify-center bg-green-500">
+                                <x-loading-indicator size="5">
+                                    Verifying...
+                                </x-loading-indicator>
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -127,7 +153,6 @@
     </div>
 
     <!-- Firebase Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
         import { 
@@ -171,14 +196,8 @@
         const googleLoginBtn = document.getElementById('google-login-btn');
         const backToLoginBtn = document.getElementById('back-to-login');
         const backToPhoneBtn = document.getElementById('back-to-phone');
-        const sendOtpBtn = document.getElementById('send-otp-btn');
+        const verifyPhoneBtn = document.getElementById('verify-phone-btn');
         const verifyOtpBtn = document.getElementById('verify-otp-btn');
-
-        // Loaders
-        const sendOtpLoader = document.getElementById('send-otp-loader');
-        const sendOtpText = document.getElementById('send-otp-text');
-        const verifyOtpLoader = document.getElementById('verify-otp-loader');
-        const verifyOtpText = document.getElementById('verify-otp-text');
 
         // Input fields
         const phoneNumberInput = document.getElementById('phone_number');
@@ -217,10 +236,10 @@
             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'normal',
                 'callback': (response) => {
-                    sendOtpBtn.removeAttribute('disabled');
+                    verifyPhoneBtn.removeAttribute('disabled');
                 },
                 'expired-callback': () => {
-                    sendOtpBtn.setAttribute('disabled', true);
+                    verifyPhoneBtn.setAttribute('disabled', true);
                     showError('reCAPTCHA has expired. Please refresh the page.');
                 }
             });
@@ -261,18 +280,13 @@
             
             try {
                 // Show loader
-                sendOtpBtn.setAttribute('disabled', true);
-                sendOtpLoader.classList.remove('hidden');
-                sendOtpText.textContent = 'Sending...';
-                
+                showLoading(verifyPhoneBtn);                
                 // Check if phone number exists in the database
                 const exists = await checkPhoneNumberExists(phoneNumber);
                 
                 if (!exists) {
                     showError('This phone number is not registered. Please contact an administrator.', 'phone-error');
-                    sendOtpBtn.removeAttribute('disabled');
-                    sendOtpLoader.classList.add('hidden');
-                    sendOtpText.textContent = 'Send OTP';
+                    verifyPhoneBtn.removeAttribute('disabled');
                     return;
                 }
                 
@@ -294,9 +308,8 @@
                 });
             } finally {
                 // Hide loader
-                sendOtpBtn.removeAttribute('disabled');
-                sendOtpLoader.classList.add('hidden');
-                sendOtpText.textContent = 'Send OTP';
+                hideLoading(verifyPhoneBtn);
+                verifyPhoneBtn.removeAttribute('disabled');
             }
         }
 
@@ -313,9 +326,8 @@
             
             try {
                 // Show loader
+                showLoading(verifyOtpBtn);
                 verifyOtpBtn.setAttribute('disabled', true);
-                verifyOtpLoader.classList.remove('hidden');
-                verifyOtpText.textContent = 'Verifying...';
                 
                 // Verify code
                 const result = await confirmationResult.confirm(code);
@@ -330,26 +342,29 @@
                 showError(error.message || 'Invalid verification code. Please try again.', 'verification-error');
             } finally {
                 // Hide loader
+                hideLoading(verifyOtpBtn);
                 verifyOtpBtn.removeAttribute('disabled');
-                verifyOtpLoader.classList.add('hidden');
-                verifyOtpText.textContent = 'Verify OTP';
             }
         }
 
         // Google Sign In
         async function signInWithGoogle() {
+            const button = document.getElementById('google-login-btn');
+            showLoading(button);
+            
             try {
                 const provider = new GoogleAuthProvider();
                 const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const idToken = await user.getIdToken();
+                const idToken = await result.user.getIdToken();
                 
                 // Send token to server
                 await verifyTokenWithServer(idToken, 'google');
                 
             } catch (error) {
-                console.error('Error signing in with Google:', error);
-                showError(error.message || 'Google sign-in failed. Please try again.');
+                console.error('Error:', error);
+                showError(error.message || 'Google sign-in failed');
+            } finally {
+                hideLoading(button);
             }
         }
 
@@ -417,7 +432,7 @@
             });
             
             // Send OTP Button
-            sendOtpBtn.addEventListener('click', sendOTP);
+            verifyPhoneBtn.addEventListener('click', sendOTP);
             
             // Verify OTP Button
             verifyOtpBtn.addEventListener('click', verifyOTP);
@@ -429,6 +444,18 @@
                 }
             });
         });
+
+        function showLoading(button) {
+            button.disabled = true;
+            button.querySelector('.normal-state').classList.add('hidden');
+            button.querySelector('.loading-state').classList.remove('hidden');
+        }
+
+        function hideLoading(button) {
+            button.disabled = false;
+            button.querySelector('.normal-state').classList.remove('hidden');
+            button.querySelector('.loading-state').classList.add('hidden');
+        }
     </script>
 </body>
 </html> 
