@@ -1,31 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import PhoneInput, { ICountry, isValidPhoneNumber } from 'react-native-international-phone-number';
 import Colors from '../../constants/Colors';
 import ErrorMessage from '../ui/ErrorMessage';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface PhoneLoginProps {
   onSendCode: (phoneNumber: string) => Promise<void>;
 }
 
 export default function PhoneLogin({ onSendCode }: PhoneLoginProps) {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
+  const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isValid, setIsValid] = useState(false);
 
-  useEffect(() => {
-    validatePhoneNumber(phoneNumber);
-  }, [phoneNumber]);
+  const handleInputValue = (phoneNumber: string) => {
+    setInputValue(phoneNumber);
+    setError(null);
+  };
 
-  const validatePhoneNumber = (number: string) => {
-    // Basic phone number validation
-    const phoneRegex = /^\+[1-9]\d{1,14}$/;
-    setIsValid(phoneRegex.test(number));
+  const handleSelectedCountry = (country: ICountry) => {
+    setSelectedCountry(country);
     setError(null);
   };
 
   const handleSendCode = async () => {
-    if (!isValid) {
+    if (!selectedCountry || !isValidPhoneNumber(inputValue, selectedCountry)) {
       setError('Please enter a valid phone number');
       return;
     }
@@ -33,37 +34,34 @@ export default function PhoneLogin({ onSendCode }: PhoneLoginProps) {
     try {
       setLoading(true);
       setError(null);
-      await onSendCode(phoneNumber);
-    } catch (error) {
-      setError('Failed to send verification code. Please try again.');
+      const fullNumber = `${selectedCountry.callingCode}${inputValue.replace(/\s+/g, '')}`;
+      await onSendCode(fullNumber);
+    } catch (error: any) {
+      setError(error.message || 'Failed to send verification code');
     } finally {
       setLoading(false);
     }
   };
 
+  if (loading) return <LoadingSpinner />;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Phone Number</Text>
-      <TextInput
-        style={[
-          styles.input,
-          error && styles.inputError
-        ]}
-        placeholder="+911234567890"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        editable={!loading}
+      <PhoneInput
+        value={inputValue}
+        onChangePhoneNumber={handleInputValue}
+        selectedCountry={selectedCountry}
+        onChangeSelectedCountry={handleSelectedCountry}
+        defaultCountry="IN"
+        placeholder='9595959595'
       />
+      
       {error && <ErrorMessage message={error} />}
-      <TouchableOpacity 
-        style={[
-          styles.button,
-          (!isValid || loading) && styles.buttonDisabled
-        ]}
+      
+      <TouchableOpacity
+        style={[styles.button, (!inputValue || loading) && styles.buttonDisabled]}
         onPress={handleSendCode}
-        disabled={!isValid || loading}
+        disabled={!inputValue || loading}
       >
         <Text style={styles.buttonText}>
           {loading ? 'Sending...' : 'Send Code'}
@@ -76,6 +74,24 @@ export default function PhoneLogin({ onSendCode }: PhoneLoginProps) {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    width: '100%',
+  },
+  phoneContainer: {
+    width: '100%',
+    height: 50,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    backgroundColor: Colors.background,
+  },
+  flagContainer: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  textContainer: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    backgroundColor: Colors.background,
   },
   label: {
     fontSize: 14,

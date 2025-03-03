@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseService } from '../services/firebase';
 import { useEffect } from 'react';
+import { usePathname, useRouter } from 'expo-router';
 
 interface User {
   id: number;
@@ -76,4 +77,26 @@ export const useAuthInit = () => {
 
     return () => unsubscribe();
   }, []);
+};
+
+export const useAuthGuard = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (!isLoading) {
+      const isAuthRoute = pathname.includes('(auth)');
+      const isVerifyRoute = pathname.includes('verify');
+      
+      // Allow verify route even when not authenticated
+      if (!isAuthenticated && !isAuthRoute && !isVerifyRoute) {
+        router.replace('/(auth)/login');
+      } else if (isAuthenticated && isAuthRoute) {
+        setTimeout(() => {
+          router.replace('/(app)/home');
+        }, 0);
+      }
+    }
+  }, [isAuthenticated, isLoading, pathname]);
 }; 

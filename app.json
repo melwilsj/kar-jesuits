@@ -12,10 +12,12 @@
       "supportsTablet": true
     },
     "android": {
+	  "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.ksjdevs.karjesuits"
     },
     "web": {
       "bundler": "metro",
@@ -32,10 +34,18 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b820f31e-3130-47fe-bc82-0d7e3d19668b"
+      }
+    },
+    "owner": "melwilsj"
   }
 }

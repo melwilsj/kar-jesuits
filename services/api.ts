@@ -27,10 +27,17 @@ export const authAPI = {
   },
 
   googleLogin: async (idToken: string) => {
-    const response = await api.post('/auth/google/login', {
-      id_token: idToken,
-    });
-    return response.data;
+    try {
+      const response = await api.post('/auth/google/login', {
+        id_token: idToken,
+        provider: 'google'
+      });
+      console.log('API Response:', response.data);
+      return response;
+    } catch (error:any) {
+      console.error('API Error:', error.response?.data || error);
+      throw error;
+    }
   },
 
   logout: async () => {

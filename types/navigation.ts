@@ -8,7 +8,7 @@ export interface AuthStackParamList extends ParamListBase {
   };
 }
 
-export interface AppStackParamList extends ParamListBase {
+export interface AppTabParamList extends ParamListBase {
   home: undefined;
   profile: undefined;
 } 
