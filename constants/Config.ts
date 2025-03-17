@@ -7,7 +7,6 @@ const FIREBASE_CONFIG = {
 
 const API_CONFIG = {
   baseURL: process.env.EXPO_PUBLIC_API_URL,
-  timeout: 10000,
 };
 
 export { FIREBASE_CONFIG, API_CONFIG }; 

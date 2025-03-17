@@ -1,40 +1,46 @@
-import { Tabs } from 'expo-router';
+import { Drawer } from 'expo-router/drawer';
 import { useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '../../constants/Colors';
+import CustomDrawer from '@/components/CustomDrawer';
+import SearchHeader from '@/components/SearchHeader';
+import TabBar from '@/components/TabBar';
 
 export default function AppLayout() {
   const colorScheme = useColorScheme();
-
+  const isDark = colorScheme === 'dark';
+  
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: true,
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.gray[400],
-        tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-        },
-        headerStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-        },
-        headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
-      }}
-    >
-      <Tabs.Screen
-        name="home/index"
-        options={{
-          title: 'Home',
-          tabBarLabel: 'Home',
+    <>
+      <Drawer
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: isDark ? '#000' : '#fff',
+          },
+          headerTintColor: isDark ? '#fff' : '#000',
+          drawerStyle: {
+            backgroundColor: isDark ? '#000' : '#fff',
+          },
+          drawerActiveTintColor: Colors.primary,
+          drawerInactiveTintColor: Colors.gray[400],
+          headerTitle: '',
+          headerLeft: () => <SearchHeader />,
         }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarLabel: 'Profile',
-        }}
-      />
-    </Tabs>
+        drawerContent={(props) => <CustomDrawer {...props} />}
+      >
+        <Drawer.Screen name="home" 
+          options={{ drawerLabel: 'Home' }} />
+        <Drawer.Screen name="filter" 
+          options={{ drawerLabel: 'Filter' }} />
+        <Drawer.Screen name="documents" 
+          options={{ drawerLabel: 'Documents' }} />
+        <Drawer.Screen name="settings" 
+          options={{ drawerLabel: 'Settings' }} />
+        <Drawer.Screen name="profile/[id]" 
+          options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="community/[id]" 
+          options={{ drawerItemStyle: { display: 'none' } }} />
+      </Drawer>
+      <TabBar />
+    </>
   );
-} 
+}

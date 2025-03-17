@@ -17,7 +17,8 @@ const Colors = {
     700: '#374151',
     800: '#1F2937',
     900: '#111827',
-  }
+  },
+  white: '#FFFFFF',
 };
 
 export default Colors; 

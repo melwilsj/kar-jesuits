@@ -5,10 +5,10 @@ import { API_CONFIG } from '../constants/Config';
 import {
   GoogleSignin
 } from '@react-native-google-signin/google-signin';
+import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 
-
-export class FirebaseService {
-  static async init() {
+export const FirebaseService = {
+  async init() {
     try {
       if (!process.env.EXPO_PUBLIC_FIREBASE_WEB_CLIENT_ID) {
         throw new Error('Firebase Web Client ID is not configured');
@@ -25,9 +25,9 @@ export class FirebaseService {
       console.error('Firebase initialization error:', error);
       throw error;
     }
-  }
+  },
 
-  static async checkPhoneExists(phoneNumber: string): Promise<boolean> {
+  async checkPhoneExists(phoneNumber: string): Promise<boolean> {
     try {
       const response = await fetch(`${API_CONFIG.baseURL}/auth/check-phone`, {
         method: 'POST',
@@ -42,9 +42,9 @@ export class FirebaseService {
       console.error('Error checking phone:', error);
       throw error;
     }
-  }
+  },
 
-  static async sendVerificationCode(phoneNumber: string): Promise<string> {
+  async sendVerificationCode(phoneNumber: string): Promise<string> {
     try {
       // First check if phone exists in database
       const exists = await this.checkPhoneExists(phoneNumber);
@@ -61,9 +61,9 @@ export class FirebaseService {
       console.error('Send code error:', error);
       throw error;
     }
-  }
+  },
 
-  static async signInWithPhone(verificationId: string, code: string): Promise<{ token: string }> {
+  async verifyPhoneCode(verificationId: string, code: string): Promise<{ token: string }> {
     try {
       const auth = getAuth();
       const credential = PhoneAuthProvider.PhoneAuthProvider.credential(verificationId, code);
@@ -71,12 +71,12 @@ export class FirebaseService {
       const token = await result.user.getIdToken();
       return { token };
     } catch (error) {
-      console.error('Phone verification error:', error);
+      console.error('Code verification error:', error);
       throw error;
     }
-  }
+  },
 
-  static async signInWithGoogle(): Promise<{ token: string }> {
+  async signInWithGoogle(): Promise<{ token: string }> {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
@@ -95,28 +95,39 @@ export class FirebaseService {
       console.error('Google sign in error:', error);
       throw error;
     }
-  }
+  },
 
-  static async signOut(): Promise<void> {
+  async signOut() {
     try {
+      // Always try to sign out from Google first
+      try {
+        await GoogleSignin.signOut();
+      } catch (error) {
+        console.log('Google sign out error (ignored):', error);
+      }
+      
+      // Then try Firebase signout if there's a current user
       const auth = getAuth();
       if (auth.currentUser) {
         await auth.signOut();
-        await GoogleSignin.signOut();
       }
     } catch (error) {
       console.error('Sign out error:', error);
-      throw error;
-  }
-}
+      // Don't throw the error, just log it
+    }
+  },
 
-  // Add auth state listener
-  static onAuthStateChanged(callback: (user: any) => void) {
+  onAuthStateChanged(callback: (user: FirebaseAuthTypes.User | null) => void) {
     return getAuth().onAuthStateChanged(callback);
-  }
+  },
 
-  // Get current user
-  static getCurrentUser() {
+  async getCurrentUser() {
     return getAuth().currentUser;
+  },
+
+  async getIdToken(forceRefresh = false) {
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('No authenticated user');
+    return user.getIdToken(forceRefresh);
   }
-}
+};

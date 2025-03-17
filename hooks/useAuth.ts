@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseService } from '../services/firebase';
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'expo-router';
+import { DataStorage } from '@/services/storage';
+import { CurrentJesuit } from '@/types/api';
 
 interface User {
   id: number;
@@ -17,12 +19,15 @@ interface User {
 interface AuthState {
   token: string | null;
   user: User | null;
+  currentJesuit: CurrentJesuit | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   setToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
+  setCurrentJesuit: (jesuit: CurrentJesuit | null) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
+  setAuthData: (data: { token: string; user: User; jesuit?: CurrentJesuit }) => void;
 }
 
 export const useAuth = create<AuthState>()(
@@ -30,17 +35,30 @@ export const useAuth = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
+      currentJesuit: null,
       isLoading: true,
       isAuthenticated: false,
       setToken: (token) => 
         set({ token, isAuthenticated: !!token }),
       setUser: (user) => 
         set({ user }),
+      setCurrentJesuit: (jesuit) => 
+        set({ currentJesuit: jesuit }),
       setLoading: (loading) => 
         set({ isLoading: loading }),
+      setAuthData: (data) => set({
+        token: data.token,
+        user: data.user,
+        currentJesuit: data.jesuit,
+        isAuthenticated: true
+      }),
       logout: async () => {
-        await FirebaseService.signOut();
-        set({ token: null, user: null, isAuthenticated: false });
+        try {
+          await FirebaseService.signOut();
+          await DataStorage.clearAll();
+        } finally {
+          set({ token: null, user: null, currentJesuit: null, isAuthenticated: false });
+        }
       },
     }),
     {
@@ -49,35 +67,6 @@ export const useAuth = create<AuthState>()(
     }
   )
 );
-
-// Hook to initialize auth state
-export const useAuthInit = () => {
-  const { setToken, setUser, setLoading } = useAuth();
-
-  useEffect(() => {
-    const unsubscribe = FirebaseService.onAuthStateChanged(async (firebaseUser) => {
-      setLoading(true);
-      if (firebaseUser) {
-        try {
-          const token = await firebaseUser.getIdToken();
-          setToken(token);
-          // You might want to fetch user details from your backend here
-          // and call setUser with the response
-        } catch (error) {
-          console.error('Error getting user token:', error);
-          setToken(null);
-          setUser(null);
-        }
-      } else {
-        setToken(null);
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-};
 
 export const useAuthGuard = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -99,4 +88,42 @@ export const useAuthGuard = () => {
       }
     }
   }, [isAuthenticated, isLoading, pathname]);
+};
+
+export const useInitAuth = () => {
+  const useDataSync = require('./useDataSync').useDataSync;
+  const { setToken, setLoading, user } = useAuth();
+  const { syncData } = useDataSync();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Firebase auth state listener
+  useEffect(() => {
+    const unsubscribe = FirebaseService.onAuthStateChanged(async (firebaseUser) => {
+      try {
+        if (!firebaseUser) {
+          setToken(null);
+        }
+      } catch (error) {
+        console.error('Auth state change error:', error);
+        setToken(null);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Background sync when authenticated
+  useEffect(() => {
+    if (user) {
+      // Use setTimeout to run sync in the background after auth is confirmed
+      setTimeout(() => {
+        syncData(true, true).catch((err: any) => {
+          console.error('Background sync failed:', err);
+        });
+      }, 500);
+    }
+  }, [user]);
 }; 

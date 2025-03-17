@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
-import Colors from '../../constants/Colors';
+import Colors from '@/constants/Colors';
 
 interface GoogleLoginProps {
   onPress: () => Promise<void>;
@@ -10,7 +10,7 @@ export default function GoogleLogin({ onPress }: GoogleLoginProps) {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <Image
-        source={require('../../assets/images/google.png')}
+        source={require('@/assets/images/google.png')}
         style={styles.icon}
       />
       <Text style={styles.text}>Continue with Google</Text>

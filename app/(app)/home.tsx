@@ -1,16 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-import { useAuth } from '../../../hooks/useAuth';
-import Colors from '../../../constants/Colors';
-import { FirebaseService } from '../../../services/firebase';
+import { useAuth } from '@/hooks/useAuth';
+import Colors from '@/constants/Colors';
+import { authAPI } from '@/services/api';
+import ScreenContainer from '@/components/ScreenContainer';
 
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { user, currentJesuit } = useAuth();
+  const { logout } = authAPI;
 
   const handleLogout = async () => {
     try {
-      await FirebaseService.signOut();
       logout();
     } catch (error) {
       console.error('Logout error:', error);
@@ -18,32 +19,34 @@ export default function Home() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcome}>
-        Welcome, {user?.name}
-      </Text>
-      
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push('/profile')}
-      >
-        <Text style={styles.buttonText}>View Profile</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        style={[styles.button, styles.logoutButton]}
-        onPress={handleLogout}
-      >
-        <Text style={[styles.buttonText, styles.logoutText]}>
-          Logout
+    <ScreenContainer>
+      <View style={styles.content}>
+        <Text style={styles.welcome}>
+          Welcome, {user?.name}
         </Text>
-      </TouchableOpacity>
-    </View>
+        
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/(app)/profile/me')}
+        >
+          <Text style={styles.buttonText}>View Profile</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.button, styles.logoutButton]}
+          onPress={handleLogout}
+        >
+          <Text style={[styles.buttonText, styles.logoutText]}>
+            Logout
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  content: {
     flex: 1,
     backgroundColor: Colors.background,
     padding: 16,

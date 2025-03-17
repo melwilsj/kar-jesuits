@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import PhoneLogin from '../../components/auth/PhoneLogin';
-import GoogleLogin from '../../components/auth/GoogleLogin';
-import { FirebaseService } from '../../services/firebase';
-import { authAPI } from '../../services/api';
-import { useAuth } from '../../hooks/useAuth';
-import Colors from '../../constants/Colors';
-import ErrorMessage from '../../components/ui/ErrorMessage';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import PhoneLogin from '@/components/auth/PhoneLogin';
+import GoogleLogin from '@/components/auth/GoogleLogin';
+import { FirebaseService } from '@/services/firebase';
+import { authAPI } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
+import Colors from '@/constants/Colors';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import LoadingProgress from '@/components/ui/LoadingProgress';
+import { useDataSync } from '@/hooks/useDataSync';
+import { dataAPI } from '@/services/api';
 
 export default function Login() {
   const { setToken, setUser } = useAuth();
+  const { syncData } = useDataSync();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,20 +40,39 @@ export default function Login() {
     try {
       setLoading(true);
       setError(null);
+      
       const { token } = await FirebaseService.signInWithGoogle();
       const response = await authAPI.googleLogin(token);
-      setToken(response.data.token);
-      setUser(response.data.user);
+      
+      // Fetch current jesuit data
+      useAuth.getState().setToken(response.data.token);
+      const jesuitResponse = await dataAPI.fetchCurrentJesuit();
+      
+      useAuth.getState().setAuthData({
+        token: response.data.token,
+        user: response.data.user,
+        jesuit: jesuitResponse.data.data
+      });
+      
+      router.replace('/(app)/home');
+      
+      // Then trigger background sync for search data
+      setTimeout(() => {
+        syncData(true).catch(console.error);
+      }, 100);
+      
     } catch (error: any) {
       setError(error.message || 'Google login failed');
-      await FirebaseService.signOut();
+      if (error.response) {
+        await FirebaseService.signOut();
+      }
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingProgress />;
   }
 
   return (

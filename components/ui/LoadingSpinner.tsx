@@ -1,16 +1,16 @@
 import React from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import Colors from '../../constants/Colors';
+import Colors from '@/constants/Colors';
 
-interface LoadingSpinnerProps {
+interface LoadingProgressProps {
   size?: 'small' | 'large';
   color?: string;
 }
 
-export default function LoadingSpinner({ 
+export default function LoadingProgress({ 
   size = 'large', 
   color = Colors.primary 
-}: LoadingSpinnerProps) {
+}: LoadingProgressProps) {
   return (
     <View style={styles.container}>
       <ActivityIndicator size={size} color={color} />

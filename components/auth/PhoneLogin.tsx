@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import PhoneInput, { ICountry, isValidPhoneNumber } from 'react-native-international-phone-number';
-import Colors from '../../constants/Colors';
+import Colors from '@/constants/Colors';
 import ErrorMessage from '../ui/ErrorMessage';
-import LoadingSpinner from '../ui/LoadingSpinner';
+import LoadingProgress from '../ui/LoadingProgress';
 
 interface PhoneLoginProps {
   onSendCode: (phoneNumber: string) => Promise<void>;
@@ -43,7 +43,7 @@ export default function PhoneLogin({ onSendCode }: PhoneLoginProps) {
     }
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <LoadingProgress />;
 
   return (
     <View style={styles.container}>

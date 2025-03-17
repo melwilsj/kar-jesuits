@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { FirebaseService } from '../../services/firebase';
-import { authAPI } from '../../services/api';
-import { useAuth } from '../../hooks/useAuth';
-import Colors from '../../constants/Colors';
-import ErrorMessage from '../../components/ui/ErrorMessage';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { FirebaseService } from '@/services/firebase';
+import { authAPI, dataAPI } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
+import Colors from '@/constants/Colors';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import LoadingProgress from '@/components/ui/LoadingProgress';
 
 export default function Verify() {
   const { verificationId, phoneNumber } = useLocalSearchParams();
@@ -45,7 +45,7 @@ export default function Verify() {
     try {
       setLoading(true);
       setError(null);
-      const { token } = await FirebaseService.signInWithPhone(
+      const { token } = await FirebaseService.verifyPhoneCode(
         verificationId as string,
         code
       );
@@ -55,7 +55,13 @@ export default function Verify() {
         token
       );
       setToken(response.data.token);
-      setUser(response.data.user);
+      const jesuitResponse = await dataAPI.fetchCurrentJesuit();
+      useAuth.getState().setAuthData({
+        token: response.data.token,
+        user: response.data.user,
+        jesuit: jesuitResponse.data.data
+      });
+      router.replace('/(app)/home');
     } catch (error) {
       setError('Invalid verification code. Please try again.');
     } finally {
@@ -64,7 +70,7 @@ export default function Verify() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingProgress />;
   }
 
   return (
@@ -75,7 +81,7 @@ export default function Verify() {
       </Text>
       
       <TextInput
-        style={[styles.input, error && styles.inputError]}
+        style={[styles.input, error && additionalStyles.inputError]}
         value={code}
         onChangeText={(text) => {
           setCode(text);
@@ -99,11 +105,11 @@ export default function Verify() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.resendButton, timeLeft > 0 && styles.buttonDisabled]}
+        style={[additionalStyles.resendButton, timeLeft > 0 && styles.buttonDisabled]}
         onPress={handleResendCode}
         disabled={timeLeft > 0}
       >
-        <Text style={styles.resendText}>
+        <Text style={additionalStyles.resendText}>
           {timeLeft > 0 
             ? `Resend code in ${timeLeft}s` 
             : 'Resend code'}

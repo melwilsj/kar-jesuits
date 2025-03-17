@@ -1,37 +1,42 @@
 import { Stack, SplashScreen } from 'expo-router';
-import { useEffect } from 'react';
-import { useAuth, useAuthInit, useAuthGuard } from '../hooks/useAuth';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { useState, useEffect } from 'react';
+import { useAuth, useInitAuth } from '../hooks/useAuth';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { FirebaseService } from '../services/firebase';
+import { FirebaseService } from '@/services/firebase';
+import LoadingProgress from '@/components/ui/LoadingProgress';
+import { useDataSync } from '@/hooks/useDataSync';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading: isSyncing, progress } = useDataSync();
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  useInitAuth();
   
   useEffect(() => {
     const init = async () => {
       try {
         await FirebaseService.init();
+        setIsInitialized(true);
       } catch (error) {
         console.error('Initialization error:', error);
+        setIsInitialized(true); // Still set initialized to prevent hanging
       } finally {
-        // Hide splash screen after initialization
-        SplashScreen.hideAsync();
+        SplashScreen.hideAsync().catch(console.error);
       }
     };
     
     init();
   }, []);
 
-  // Initialize auth state
-  useAuthInit();
-  useAuthGuard();
-
-  if (isLoading) {
-    return <LoadingSpinner />;
+  if (!isInitialized || isLoading || isSyncing) {
+    return <LoadingProgress 
+      message={isSyncing ? "Syncing data..." : "Loading..."} 
+      progress={isSyncing ? progress : 0} 
+    />;
   }
 
   return (
@@ -43,19 +48,9 @@ export default function RootLayout() {
         }}
       >
         {isAuthenticated ? (
-          <Stack.Screen 
-            name="(app)" 
-            options={{
-              headerShown: false,
-            }} 
-          />
+          <Stack.Screen name="(app)" />
         ) : (
-          <Stack.Screen 
-            name="(auth)" 
-            options={{
-              headerShown: false,
-            }} 
-          />
+          <Stack.Screen name="(auth)" />
         )}
       </Stack>
     </SafeAreaProvider>
