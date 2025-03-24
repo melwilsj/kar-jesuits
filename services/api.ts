@@ -13,6 +13,7 @@ api.interceptors.request.use((config) => {
   const token = useAuth.getState().token;
   if (token) {
     console.log('Bearer Token:', token);
+    console.log('Config:', config.url);
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -126,4 +127,19 @@ export const dataAPI = {
   fetchJesuits: () => executeWithRetry(() => api.get('/province-jesuits')),
   fetchCommunities: () => executeWithRetry(() => api.get('/province-communities')),
   fetchCurrentJesuit: () => executeWithRetry(() => api.get(`/current-jesuit`)),
+  fetchJesuitsInFormation: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/formation?page=${page}`)),
+  fetchJesuitsInCommonHouses: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/common-houses?page=${page}`)),
+  fetchJesuitsInOtherProvinces: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/other-provinces?page=${page}`)),
+  fetchJesuitsOutsideIndia: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/outside-india?page=${page}`)),
+  fetchOtherProvinceJesuitsResiding: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/other-residing?page=${page}`)),
+  fetchEducationalInstitutions: () => executeWithRetry(() => api.get('/province/institutions/educational')),
+  fetchSocialCenters: () => executeWithRetry(() => api.get('/province/institutions/social-centers')),
+  fetchParishes: () => executeWithRetry(() => api.get('/province/institutions/parishes')),
+  fetchAllCommissions: () => executeWithRetry(() => api.get('/province/commissions')),
+  fetchCommissionsByType: (type: string) => executeWithRetry(() => api.get(`/province/commissions/${type}`)),
+  fetchAgeDistributionStats: () => executeWithRetry(() => api.get('/province/statistics/age-distribution')),
+  fetchFormationStats: () => executeWithRetry(() => api.get('/province/statistics/formation')),
+  fetchGeographicalStats: () => executeWithRetry(() => api.get('/province/statistics/geographical')),
+  fetchMinistryStats: () => executeWithRetry(() => api.get('/province/statistics/ministry')),
+  fetchYearlyTrendsStats: () => executeWithRetry(() => api.get('/province/statistics/yearly-trends')),
 }; 

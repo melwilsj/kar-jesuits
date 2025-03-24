@@ -1,6 +1,8 @@
+import React from 'react';
 import { 
   DrawerContentScrollView,
   DrawerItemList,
+  DrawerItem,
   DrawerContentComponentProps 
 } from '@react-navigation/drawer';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
@@ -16,6 +18,32 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
   const isDark = colorScheme === 'dark';
   const defaultImage = 'https://placehold.co/600x400.png';
 
+  // Define which routes should be visible in the drawer
+  const visibleRoutes = ['home', 'filter/index', 'space', 'settings'];
+
+  // Filter out any undefined routes and only include visible routes
+  const filteredProps = {
+    ...props,
+    state: {
+      ...props.state,
+      routes: props.state.routes
+        .filter(route => route !== undefined)
+        .filter(route => {
+          const routeName = route.name.replace('(app)/', '');
+          return visibleRoutes.some(visibleRoute => 
+            routeName === visibleRoute || 
+            routeName.startsWith(visibleRoute + '/')
+          );
+        }),
+    },
+  };
+
+  // Also ensure indexes are consistent
+  filteredProps.state.index = Math.min(
+    filteredProps.state.index, 
+    filteredProps.state.routes.length - 1
+  );
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -25,9 +53,20 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
     }
   };
 
+  React.useEffect(() => {
+    // Check if any route is undefined or missing a key property
+    props.state.routes.forEach((route, index) => {
+      if (!route) {
+        console.warn(`Route at index ${index} is undefined`);
+      } else if (!route.key) {
+        console.warn(`Route at index ${index} is missing a key property`, route);
+      }
+    });
+  }, [props.state.routes]);
+
   return (
     <DrawerContentScrollView 
-      {...props}
+      {...filteredProps}
       style={[
         styles.container,
         { backgroundColor: isDark ? Colors.gray[900] : Colors.background }
@@ -57,7 +96,8 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
         </View>
       </TouchableOpacity>
 
-      <DrawerItemList {...props} />
+      {/* Use the filtered props */}
+      <DrawerItemList {...filteredProps} />
 
       <TouchableOpacity 
         style={styles.logoutButton}

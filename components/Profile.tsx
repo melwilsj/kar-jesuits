@@ -66,7 +66,7 @@ export default function Profile({ jesuit, currentJesuit }: ProfileProps) {
                 <MaterialIcons name="location-city" size={20} color={Colors.gray[600]} />
                 <View style={styles.infoContent}>
                   <Text style={styles.label}>Province</Text>
-                  <Text style={styles.value}>{jesuit.province || 'Not assigned'}</Text>
+                  <Text style={styles.value}>{jesuit.region || jesuit.province || 'Not assigned'}</Text>
                 </View>
               </View>
 

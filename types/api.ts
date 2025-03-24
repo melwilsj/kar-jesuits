@@ -76,6 +76,7 @@ interface Role {
 
 export interface Jesuit {
   id: number;
+  user_id: number;
   name: string;
   code: string;
   category: 'P' | 'Bp' | 'NS' | 'F' | 'S';
@@ -85,8 +86,14 @@ export interface Jesuit {
   dob: string;
   joining_date: string;
   priesthood_date: string | null;
+  final_vows_date: string | null;
+  academic_qualifications: string | null;
+  is_external: boolean;
+  notes: string | null;
   province_only: boolean;
+  province_id: number | null;
   region_id: number | null;
+  current_community_id: number | null;
   current_community: string | null;
   province: string | null;
   region: string | null;
@@ -154,6 +161,75 @@ export interface CurrentJesuit {
   }[];
 }
 
+export interface Institution {
+  id: number;
+  name: string;
+  type: 'educational' | 'social_center' | 'parish' | 'other';
+  diocese: string;
+  address?: string;
+  established?: string;
+  province_id: number;
+  community_id?: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+  community?: Community;
+  province?: {
+    id: number;
+    name: string;
+    code: string;
+  };
+}
+
+export interface Commission {
+  id: number;
+  name: string;
+  type: 'education' | 'social' | 'formation' | 'pastoral' | 'other';
+  coordinator?: string;
+  description?: string;
+  members?: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
+
+export interface StatisticData {
+  label: string;
+  value: number | string;
+  percentage?: number;
+  color?: string;
+}
+
+// Update pagination structure to match new API response format
+export interface PaginatedData<T> {
+  current_page: number;
+  data: T[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: {
+    url: string | null;
+    label: string;
+    active: boolean;
+  }[];
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
+}
+
+// Update JesuitsResponse to support pagination
+export interface PaginatedJesuitsResponse {
+  success: boolean;
+  message: string;
+  data: PaginatedData<Jesuit>;
+  meta: any | null;
+}
+
 // Use in API calls
 export const dataAPI = {
   fetchJesuits: () => executeWithRetry(() => 
@@ -164,5 +240,58 @@ export const dataAPI = {
   ),
   fetchCurrentJesuit: () => executeWithRetry(() => 
     api.get<ApiResponse<CurrentJesuit>>('/current-jesuit')
+  ),
+  
+  // Update Jesuit filters with pagination support
+  fetchJesuitsInFormation: (page = 1) => executeWithRetry(() => 
+    api.get<PaginatedJesuitsResponse>(`/province/jesuits/formation?page=${page}`)
+  ),
+  fetchJesuitsInCommonHouses: (page = 1) => executeWithRetry(() => 
+    api.get<PaginatedJesuitsResponse>(`/province/jesuits/common-houses?page=${page}`)
+  ),
+  fetchJesuitsInOtherProvinces: (page = 1) => executeWithRetry(() => 
+    api.get<PaginatedJesuitsResponse>(`/province/jesuits/other-provinces?page=${page}`)
+  ),
+  fetchJesuitsOutsideIndia: (page = 1) => executeWithRetry(() => 
+    api.get<PaginatedJesuitsResponse>(`/province/jesuits/outside-india?page=${page}`)
+  ),
+  fetchOtherProvinceJesuitsResiding: (page = 1) => executeWithRetry(() => 
+    api.get<PaginatedJesuitsResponse>(`/province/jesuits/other-residing?page=${page}`)
+  ),
+  
+  // Institution filters
+  fetchEducationalInstitutions: () => executeWithRetry(() => 
+    api.get<ApiResponse<Institution[]>>('/province/institutions/educational')
+  ),
+  fetchSocialCenters: () => executeWithRetry(() => 
+    api.get<ApiResponse<Institution[]>>('/province/institutions/social-centers')
+  ),
+  fetchParishes: () => executeWithRetry(() => 
+    api.get<ApiResponse<Institution[]>>('/province/institutions/parishes')
+  ),
+  
+  // Commission filters
+  fetchAllCommissions: () => executeWithRetry(() => 
+    api.get<ApiResponse<Commission[]>>('/province/commissions')
+  ),
+  fetchCommissionsByType: (type: string) => executeWithRetry(() => 
+    api.get<ApiResponse<Commission[]>>(`/province/commissions/${type}`)
+  ),
+  
+  // Statistics
+  fetchAgeDistributionStats: () => executeWithRetry(() => 
+    api.get<ApiResponse<StatisticData[]>>('/province/statistics/age-distribution')
+  ),
+  fetchFormationStats: () => executeWithRetry(() => 
+    api.get<ApiResponse<StatisticData[]>>('/province/statistics/formation')
+  ),
+  fetchGeographicalStats: () => executeWithRetry(() => 
+    api.get<ApiResponse<StatisticData[]>>('/province/statistics/geographical')
+  ),
+  fetchMinistryStats: () => executeWithRetry(() => 
+    api.get<ApiResponse<StatisticData[]>>('/province/statistics/ministry')
+  ),
+  fetchYearlyTrendsStats: () => executeWithRetry(() => 
+    api.get<ApiResponse<StatisticData[]>>('/province/statistics/yearly-trends')
   ),
 };

@@ -12,7 +12,7 @@ export default function TabBar() {
   const tabs = [
     { name: 'home', label: 'Home', icon: 'home' },
     { name: 'filter', label: 'Filter', icon: 'filter-list' },
-    { name: 'documents', label: 'Documents', icon: 'description' },
+    { name: 'space', label: 'Spaces', icon: 'description' },
     { name: 'settings', label: 'Settings', icon: 'settings' },
   ];
   

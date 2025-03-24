@@ -4,6 +4,7 @@ import { dataAPI } from '../services/api';
 import { DataStorage } from '../services/storage';
 import { CommunitiesResponse, ProvinceJesuitsResponse } from '../types/api';
 import { Community } from '../types/api';
+import { Commission } from '../types/api';
 
 export const useDataSync = () => {
   const { user, currentJesuit } = useAuth();
@@ -12,6 +13,7 @@ export const useDataSync = () => {
   const [error, setError] = useState<string | null>(null);
   const [provinceData, setProvinceData] = useState<ProvinceJesuitsResponse['data'] | null>(null);
   const [communities, setCommunities] = useState<CommunitiesResponse['data']>([]);
+  const [commissions, setCommissions] = useState<Commission[]>([]);
   
   const syncData = async (force = false, background = false) => {
     if (!user) {
@@ -43,6 +45,7 @@ export const useDataSync = () => {
           DataStorage.saveJesuits(jesuitResponse.data),
           DataStorage.saveCommunities(communitiesResponse.data.data),
           DataStorage.updateLastSync(),
+          fetchCommissions()
         ]);
         
         setProgress(100);
@@ -83,6 +86,17 @@ export const useDataSync = () => {
     }
   };
 
+  const fetchCommissions = async () => {
+    try {
+      const commissionsResponse = await dataAPI.fetchAllCommissions();
+      if (commissionsResponse?.data) {
+        setCommissions(commissionsResponse.data);
+      }
+    } catch (error) {
+      console.error('Error fetching commissions:', error);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       syncData();
@@ -102,6 +116,7 @@ export const useDataSync = () => {
     regions: provinceData?.regions || [],
     members: provinceData?.members || [],
     communities: communities || [],
-    currentJesuit
+    currentJesuit,
+    commissions
   };
 }; 

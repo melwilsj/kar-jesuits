@@ -1,10 +1,10 @@
 import { View, Text } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 
-export default function Filter() {
+export default function Documents() {
   return <ScreenContainer>
     <View>
-      <Text>Filter</Text>
+      <Text>Personal Space</Text>
     </View>
   </ScreenContainer>
 }

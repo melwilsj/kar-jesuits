@@ -5,6 +5,7 @@ const STORAGE_KEYS = {
   JESUITS: 'jesuits_data',
   COMMUNITIES: 'communities_data',
   LAST_SYNC: 'last_sync_timestamp',
+  PAGINATED_RESULTS: 'paginated_results',
 };
 
 export const DataStorage = {
@@ -72,6 +73,69 @@ export const DataStorage = {
       ]);
     } catch (error) {
       console.error('Error clearing storage:', error);
+    }
+  },
+
+  async savePaginatedResults(key: string, data: any) {
+    try {
+      // Get existing cached results
+      const existingCache = await this.getPaginatedResults();
+      const updatedCache = {
+        ...existingCache,
+        [key]: {
+          data,
+          timestamp: Date.now(),
+        },
+      };
+      
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.PAGINATED_RESULTS, 
+        JSON.stringify(updatedCache)
+      );
+    } catch (error) {
+      console.error('Error saving paginated results:', error);
+    }
+  },
+  
+  async getPaginatedResults() {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.PAGINATED_RESULTS);
+      return data ? JSON.parse(data) : {};
+    } catch (error) {
+      console.error('Error getting paginated results:', error);
+      return {};
+    }
+  },
+  
+  async getPaginatedResultsByKey(key: string) {
+    try {
+      const allResults = await this.getPaginatedResults();
+      return allResults[key] || null;
+    } catch (error) {
+      console.error('Error getting paginated results by key:', error);
+      return null;
+    }
+  },
+  
+  async clearOldPaginatedResults(maxAgeInHours = 24) {
+    try {
+      const allResults = await this.getPaginatedResults();
+      const now = Date.now();
+      const maxAge = maxAgeInHours * 60 * 60 * 1000;
+      
+      const filteredResults = Object.entries(allResults).reduce((acc, [key, value]) => {
+        if (now - (value as {timestamp: number}).timestamp < maxAge) {
+          acc[key as keyof typeof acc] = value;
+        }
+        return acc;
+      }, {} as Record<string, any>);
+      
+      await AsyncStorage.setItem(
+        STORAGE_KEYS.PAGINATED_RESULTS, 
+        JSON.stringify(filteredResults)
+      );
+    } catch (error) {
+      console.error('Error clearing old paginated results:', error);
     }
   }
 }; 
