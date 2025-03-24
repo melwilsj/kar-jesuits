@@ -14,6 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class User extends AuthenticatableModel
 {
@@ -25,8 +26,14 @@ class User extends AuthenticatableModel
         HasCommissionAccess,
         HasInstitutionAccess,
         HasFactory,
-        SoftDeletes;
+        SoftDeletes,
+        Notifiable;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'email',
@@ -35,9 +42,15 @@ class User extends AuthenticatableModel
         'is_active',
         'phone_number',
         'firebase_uid',
-        'auth_provider'
+        'auth_provider',
+        'fcm_tokens'
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -45,11 +58,17 @@ class User extends AuthenticatableModel
         'google_id'
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
-        'type' => 'string'
+        'type' => 'string',
+        'fcm_tokens' => 'array',
     ];
 
     // Relationships
@@ -115,13 +134,51 @@ class User extends AuthenticatableModel
         return $this->auth_provider === 'firebase' || $this->auth_provider === 'google';
     }
 
+    public function isProvinceAdmin(): bool
+    {
+        return $this->type === 'admin' && $this->jesuit?->province_id && !$this->jesuit?->region_id;
+    }
+
+    public function isRegionAdmin(): bool
+    {
+        return $this->type === 'admin' && $this->jesuit?->region_id;
+    }
+
     public function isAdmin(): bool
     {
-        return $this->type === 'admin' || $this->type === 'superadmin';
+        return $this->isProvinceAdmin() || $this->isRegionAdmin() || $this->isSuperAdmin();
     }
 
     public function isSuperAdmin(): bool
     {
         return $this->type === 'superadmin';
+    }
+
+    /**
+     * Add a new FCM token for this user
+     */
+    public function addFcmToken(string $token): void
+    {
+        $tokens = $this->fcm_tokens ?? [];
+        
+        if (!in_array($token, $tokens)) {
+            $tokens[] = $token;
+            $this->fcm_tokens = $tokens;
+            $this->save();
+        }
+    }
+
+    /**
+     * Remove an FCM token for this user
+     */
+    public function removeFcmToken(string $token): void
+    {
+        $tokens = $this->fcm_tokens ?? [];
+        
+        if (in_array($token, $tokens)) {
+            $tokens = array_filter($tokens, fn($t) => $t !== $token);
+            $this->fcm_tokens = array_values($tokens); // Reindex array
+            $this->save();
+        }
     }
 }

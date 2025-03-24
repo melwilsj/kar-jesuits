@@ -17,6 +17,7 @@ class Province extends BaseModel
         'code',
         'description',
         'assistancy_id',
+        'country',
         'is_active'
     ];
 

@@ -51,4 +51,19 @@ class Institution extends BaseModel
     {
         return $this->morphMany(ExternalAssignment::class, 'assignable');
     }
+
+    public function superiors()
+    {
+        return $this->morphMany(RoleAssignment::class, 'assignable')
+            ->whereHas('roleType', function($query) {
+                $query->where('name', 'Director')->orWhere('name', 'Principal');
+            })
+            ->where('is_active', true)
+            ->with('jesuit');
+    }
+
+    public function diocese()
+    {
+        return $this->belongsTo(Diocese::class);
+    }
 } 

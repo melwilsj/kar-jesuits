@@ -14,49 +14,16 @@ class ProvinceSeeder extends Seeder
                 'name' => 'Karnataka',
                 'code' => 'KAR',
                 'assistancy_id' => 1,
+                'country' => 'India',
                 'description' => 'Karnataka Jesuit Province',
                 'is_active' => true
             ],
             [
                 'name' => 'Darjeeling',
-                'code' => 'DGR',
+                'code' => 'DAR',
                 'assistancy_id' => 1,
+                'country' => 'India',
                 'description' => 'Darjeeling Jesuit Province',
-                'is_active' => true
-            ],
-            [
-                'name' => 'Madurai',
-                'code' => 'MDU',
-                'assistancy_id' => 1,
-                'description' => 'Madurai Jesuit Province',
-                'is_active' => true
-            ],
-            [
-                'name' => 'Delhi',
-                'code' => 'DEL',
-                'assistancy_id' => 1,
-                'description' => 'Delhi Jesuit Province',
-                'is_active' => true
-            ],
-            [
-                'name' => 'Bombay',
-                'code' => 'BOM',
-                'assistancy_id' => 1,
-                'description' => 'Bombay Jesuit Province',
-                'is_active' => true
-            ],
-            [
-                'name' => 'Calcutta',
-                'code' => 'CAL',
-                'assistancy_id' => 1,
-                'description' => 'Calcutta Jesuit Province',
-                'is_active' => true
-            ],
-            [
-                'name' => 'Kerala',
-                'code' => 'KER',
-                'assistancy_id' => 1,
-                'description' => 'Kerala Jesuit Province',
                 'is_active' => true
             ]
         ];

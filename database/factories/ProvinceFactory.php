@@ -12,6 +12,7 @@ class ProvinceFactory extends Factory
         return [
             'name' => $this->faker->unique()->state(),
             'code' => $this->faker->unique()->stateAbbr(),
+            'country' => 'India',
             'description' => $this->faker->sentence(),
             'assistancy_id' => Assistancy::first()->id ?? Assistancy::factory(),
             'is_active' => true,

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Commission extends BaseModel
 {
@@ -68,5 +69,25 @@ class Commission extends BaseModel
             ->where('is_active', true)
             ->first()
             ?->jesuit;
+    }
+
+    public function head(): MorphOne
+    {
+        return $this->morphOne(RoleAssignment::class, 'assignable')
+            ->whereHas('roleType', function($query) {
+                $query->where('name', 'Commission Head');
+            })
+            ->where('is_active', true)
+            ->with('jesuit');
+    }
+
+    public function members()
+    {
+        return $this->morphMany(RoleAssignment::class, 'assignable')
+            ->whereHas('roleType', function($query) {
+                $query->where('name', 'Commission Member');
+            })
+            ->where('is_active', true)
+            ->with('jesuit');
     }
 } 

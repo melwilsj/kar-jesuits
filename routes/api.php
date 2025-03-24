@@ -1,167 +1,132 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\ProvinceController;
-use App\Http\Controllers\Api\RegionController;
-use App\Http\Controllers\Api\CommunityController;
-use App\Http\Controllers\Api\InstitutionController;
-use App\Http\Controllers\Api\CommissionController;
-use App\Http\Controllers\Api\GroupController;
-use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\BulkOperationsController;
-use App\Http\Controllers\Api\{
-    JesuitProfileController,
-    FormationController,
-    RoleAssignmentController,
-    DocumentController,
-    ExternalAssignmentController,
-    ProvinceTransferController,
-    TimeTravelController
-};
-use App\Http\Controllers\Auth\FirebaseAuthController;
-use App\Http\Controllers\Api\ProfileController;
-use App\Http\Controllers\Api\MobileAuthController;
+use App\Http\Controllers\Api\V1\JesuitController;
+use App\Http\Controllers\Api\V1\ProvinceDataController;
+use App\Http\Controllers\Api\V1\TimeTravelController;
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\Auth\FirebaseAuthController;
+use App\Http\Controllers\Api\V1\CommissionController;
+use App\Http\Controllers\Api\V1\InstitutionController;
+use App\Http\Controllers\Api\V1\JesuitFilterController;
+use App\Http\Controllers\Api\V1\SocietyDirectoryController;
+use App\Http\Controllers\Api\V1\StatisticsController;
+use App\Http\Controllers\Api\V1\EventController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
-// Legacy auth endpoints (to be deprecated)
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/phone/verify', [AuthController::class, 'verifyPhone']);
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is a cleaned-up version with only the routes currently being used.
+| Commented sections contain routes that may be needed in the future.
+*/
 
-// Public Firebase Authentication endpoints
-Route::prefix('auth')->group(function () {
-    Route::post('/verify-token', [FirebaseAuthController::class, 'verifyToken']);
-    Route::post('/verify-phone', [FirebaseAuthController::class, 'verifyPhoneNumber']);
-    Route::post('/phone/login', [FirebaseAuthController::class, 'verifyToken']);
-    Route::post('/google/login', [FirebaseAuthController::class, 'verifyToken']);
-});
-
-// Protected routes with Sanctum authentication
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/auth/logout', [FirebaseAuthController::class, 'logout']);
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-    
-    // User management routes
-    Route::apiResource('users', UserController::class);
-    
-    // Province routes
-    Route::middleware('role:superadmin,province_admin')->group(function () {
-        Route::apiResource('provinces', ProvinceController::class);
-    });
-
-    // Region routes
-    Route::middleware('role:superadmin,province_admin,region_admin')->group(function () {
-        Route::apiResource('regions', RegionController::class);
-    });
-
-    // Community routes
-    Route::middleware('role:superadmin,province_admin,region_admin,community_superior')->group(function () {
-        Route::apiResource('communities', CommunityController::class);
-    });
-
-    // Institution routes
-    Route::middleware('role:superadmin,province_admin,region_admin,community_superior')->group(function () {
-        Route::apiResource('institutions', InstitutionController::class);
-    });
-
-    // Commission routes
-    Route::middleware('role:superadmin,province_admin,commission_head')->group(function () {
-        Route::apiResource('commissions', CommissionController::class);
-        Route::post('commissions/{commission}/members', [CommissionController::class, 'addMember']);
-        Route::delete('commissions/{commission}/members', [CommissionController::class, 'removeMember']);
-    });
-
-    // Group routes
-    Route::middleware('role:superadmin,province_admin')->group(function () {
-        Route::apiResource('groups', GroupController::class);
-        Route::post('groups/{group}/members', [GroupController::class, 'addMember']);
-        Route::delete('groups/{group}/members', [GroupController::class, 'removeMember']);
-    });
-
-    // Public routes for authenticated users
-    Route::get('provinces/{province}/public', [ProvinceController::class, 'showPublic']);
-    Route::get('regions/{region}/public', [RegionController::class, 'showPublic']);
-    Route::get('communities/{community}/public', [CommunityController::class, 'showPublic']);
-    Route::get('institutions/{institution}/public', [InstitutionController::class, 'showPublic']);
-
-    // Search routes
-    Route::get('/search', [SearchController::class, 'search']);
-    
-    // Dashboard routes
-    Route::get('/dashboard/statistics', [DashboardController::class, 'getStatistics']);
-    
-    // Bulk operations routes
-    Route::middleware('superadmin')->group(function () {
-        Route::post('/bulk/delete', [BulkOperationsController::class, 'bulkDelete']);
-    });
-
-    // Jesuit Profile Management
-    Route::get('jesuits/{user}/profile', [JesuitProfileController::class, 'show']);
-    Route::post('jesuits/{user}/profile', [JesuitProfileController::class, 'update']);
-    
-    // Formation Management
-    Route::get('jesuits/{user}/formation-history', [FormationController::class, 'formationHistory']);
-    Route::post('jesuits/{user}/formation', [FormationController::class, 'updateStage']);
-    
-    // Role Assignments
-    Route::post('jesuits/{user}/roles', [RoleAssignmentController::class, 'assign']);
-    Route::get('jesuits/{user}/roles', [RoleAssignmentController::class, 'history']);
-    Route::patch('role-assignments/{assignment}', [RoleAssignmentController::class, 'endAssignment']);
-    
-    // Document Management
-    Route::post('jesuits/{user}/documents', [DocumentController::class, 'store']);
-    Route::delete('documents/{document}', [DocumentController::class, 'destroy']);
-    Route::get('documents/{document}/download', [DocumentController::class, 'download']);
-    
-    // External Assignments
-    Route::post('jesuits/{user}/external-assignments', [ExternalAssignmentController::class, 'assign']);
-    Route::get('jesuits/{user}/external-assignments', [ExternalAssignmentController::class, 'history']);
-    
-    // Province Transfers
-    Route::post('jesuits/{user}/transfer-request', [ProvinceTransferController::class, 'request']);
-    Route::patch('transfers/{transfer}', [ProvinceTransferController::class, 'updateStatus']);
-
-    // Time travel routes
-    Route::prefix('time-travel')->group(function () {
-        Route::post('/state', [TimeTravelController::class, 'getStateAt']);
-        Route::get('/history/{model_type}/{model_id}', [TimeTravelController::class, 'getModelHistory']);
-    });
-    
-    // User profile
-    Route::get('profile', [ProfileController::class, 'show']);
-    Route::put('profile', [ProfileController::class, 'update']);
-});
-
-// V1 API (Versioned API with consistent Firebase auth)
+// V1 Routes
 Route::prefix('v1')->group(function () {
-    // Public auth endpoints
-    Route::post('auth/phone/login', [FirebaseAuthController::class, 'phoneLogin']);
-    Route::post('auth/google/login', [FirebaseAuthController::class, 'googleLogin']);
-    
-    // Protected routes
-    Route::middleware(['auth:sanctum', 'auth.firebase'])->group(function () {
-        Route::post('auth/logout', [FirebaseAuthController::class, 'logout']);
+    // Auth Routes - ACTIVELY USED
+    Route::prefix('auth')->group(function () {
+        Route::post('check-phone', [FirebaseAuthController::class, 'verifyPhoneNumber']);
+        Route::post('phone/login', [FirebaseAuthController::class, 'phoneLogin']);
+        Route::post('google/login', [FirebaseAuthController::class, 'googleLogin']);
         
-        // User profile
-        Route::get('profile', [ProfileController::class, 'show']);
-        Route::put('profile', [ProfileController::class, 'update']);
-        
-        // Other protected routes can be added here
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('logout', [FirebaseAuthController::class, 'logout']);
+        });
     });
-});
 
-// Firebase Auth routes for mobile app
-Route::prefix('auth')->group(function () {
-    Route::post('/phone-login', [MobileAuthController::class, 'phoneLogin']);
-    Route::post('/google-login', [MobileAuthController::class, 'googleLogin']);
-    
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/user', [MobileAuthController::class, 'getUser']);
-        Route::post('/logout', [MobileAuthController::class, 'logout']);
+        // Core data routes - ACTIVELY USED
+        Route::get('/province-jesuits', [ProvinceDataController::class, 'getProvinceJesuitsData']);
+        Route::get('/province-communities', [ProvinceDataController::class, 'getProvinceCommunitiesData']);
+        Route::get('/current-jesuit', [JesuitController::class, 'getCurrentJesuit']);
+        Route::get('/user-details', function (Request $request) {
+            return $request->user();
+        });
+        
+        // Time travel routes - ACTIVELY USED
+        Route::prefix('time-travel')->group(function () {
+            Route::post('/state', [TimeTravelController::class, 'getStateAt']);
+            Route::get('/history/{model_type}/{model_id}', [TimeTravelController::class, 'getModelHistory']);
+        });
+
+        // Testing route - ACTIVELY USED
+        Route::get('/test-auth', function (Request $request) {
+            return response()->json([
+                'message' => 'Authenticated successfully',
+                'user' => $request->user(),
+                'token_abilities' => $request->user()->currentAccessToken()->abilities ?? [],
+            ]);
+        });
+
+        // NEW PROVINCE DIRECTORY ROUTES
+        
+        // 1. Jesuit Filters
+        Route::prefix('province/jesuits')->group(function () {
+            Route::get('/formation', [JesuitFilterController::class, 'byFormation']);
+            Route::get('/common-houses', [JesuitFilterController::class, 'inCommonHouses']);
+            Route::get('/other-provinces', [JesuitFilterController::class, 'inOtherProvinces']);
+            Route::get('/outside-india', [JesuitFilterController::class, 'outsideIndia']);
+            Route::get('/other-residing', [JesuitFilterController::class, 'otherResiding']);
+        });
+
+        // 2. Institution Filters
+        Route::prefix('province/institutions')->group(function () {
+            Route::get('/educational', [InstitutionController::class, 'educational']);
+            Route::get('/social-centers', [InstitutionController::class, 'socialCenters']);
+            Route::get('/parishes', [InstitutionController::class, 'parishes']);
+        });
+
+        // 3. Commission Filters
+        Route::prefix('province/commissions')->group(function () {
+            Route::get('/', [CommissionController::class, 'index']);
+            Route::get('/{type}', [CommissionController::class, 'byType']);
+        });
+
+        // 4. Statistics
+        Route::prefix('province/statistics')->group(function () {
+            Route::get('/age-distribution', [StatisticsController::class, 'ageDistribution']);
+            Route::get('/formation', [StatisticsController::class, 'formationStats']);
+            Route::get('/geographical', [StatisticsController::class, 'geographicalDistribution']);
+            Route::get('/ministry', [StatisticsController::class, 'ministryDistribution']);
+            Route::get('/yearly-trends', [StatisticsController::class, 'yearlyTrends']);
+        });
+
+        // 5. Directory of Houses
+        Route::prefix('society')->group(function () {
+            Route::get('/assistancies', [SocietyDirectoryController::class, 'getAssistancies']);
+        });
+        Route::prefix('assistancy/{assistancy_id}')->group(function () {
+            Route::get('/provinces', [SocietyDirectoryController::class, 'getProvincesByAssistancy']);
+        });
+        Route::get('/province/{code}/communities', [SocietyDirectoryController::class, 'getCommunitiesByProvince']);
+
+        // Events
+        Route::get('events/upcoming', [EventController::class, 'upcoming'])->name('events.upcoming');
+        Route::get('events/past', [EventController::class, 'past'])->name('events.past');
+        Route::get('events/{event}', [EventController::class, 'show'])->name('events.show');
+        
+        // Notifications
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+
+        // FCM token registration
+        Route::post('fcm/register', [UserController::class, 'registerFcmToken'])->name('fcm.register');
+        Route::post('fcm/unregister', [UserController::class, 'unregisterFcmToken'])->name('fcm.unregister');
     });
 });
+
+// V2 Routes (when needed)
+Route::prefix('v2')->group(function () {
+    // Future V2 routes
+    Route::get('/test', function () {
+        return response()->json([
+            'message' => 'Hello from V2',
+        ]);
+    });
+});
+

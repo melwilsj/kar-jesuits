@@ -20,8 +20,13 @@ trait HasCommunityAccess
             return false; // Only POSA and superadmin can access common houses
         }
 
-        if ($this->canAccessProvince($community->province) || 
-            $this->canAccessRegion($community->region)) {
+        // Check province access
+        if ($community->province && $this->canAccessProvince($community->province)) {
+            return true;
+        }
+
+        // Check region access if region exists
+        if ($community->region && $this->canAccessRegion($community->region)) {
             return true;
         }
 
@@ -39,10 +44,18 @@ trait HasCommunityAccess
             return $this->isPOSA();
         }
 
-        return $this->canManageProvince($community->province) ||
-            $this->canManageRegion($community->region) ||
-            ($this->hasRole('community_superior') && 
-            $this->managedCommunities->contains($community));
+        // Check province management access
+        if ($community->province && $this->canManageProvince($community->province)) {
+            return true;
+        }
+
+        // Check region management access if region exists
+        if ($community->region && $this->canManageRegion($community->region)) {
+            return true;
+        }
+
+        return $this->hasRole('community_superior') && 
+            $this->managedCommunities->contains($community);
     }
 
     public function accessibleCommunities()

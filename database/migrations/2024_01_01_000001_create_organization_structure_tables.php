@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
+            $table->string('country')->nullable()->default('India');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -33,6 +34,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
+            $table->string('country')->nullable()->default('India');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -52,6 +54,7 @@ return new class extends Migration
             $table->string('taluk')->nullable();
             $table->string('district')->nullable();
             $table->string('state')->nullable();
+            $table->string('country')->nullable()->default('India');
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->boolean('is_formation_house')->default(false);
@@ -74,12 +77,20 @@ return new class extends Migration
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('code')->unique();
             $table->foreignId('community_id')->constrained();
             $table->enum('type', [
                 'school', 'college', 'university', 'hostel', 
                 'community_college', 'iti', 'parish', 
-                'social_centre', 'farm', 'ngo', 'other'
+                'social_centre', 'farm', 'ngo', 'retreat_center', 'other'
             ]);
+            $table->string('diocese')->nullable();
+            $table->string('taluk')->nullable();
+            $table->string('district')->nullable();
+            $table->string('state')->nullable();
+            $table->text('address');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
             $table->text('description')->nullable();
             $table->json('contact_details')->comment('Array of phones, emails, fax, website');
             $table->json('student_demographics')->nullable()->comment('
@@ -101,14 +112,7 @@ return new class extends Migration
                     "total": integer
                 }
             ');
-            $table->json('beneficiaries')->nullable()->comment('For social centres and parishes');
-            $table->string('diocese')->nullable();
-            $table->string('taluk')->nullable();
-            $table->string('district')->nullable();
-            $table->string('state')->nullable();
-            $table->text('address');
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->json('beneficiaries')->nullable()->comment('For social centres and parishes');       
             $table->softDeletes();
 
             $table->index(['community_id', 'type']);
@@ -118,7 +122,9 @@ return new class extends Migration
         Schema::create('commissions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('code')->unique();
             $table->foreignId('province_id')->constrained();
+            $table->foreignId('region_id')->nullable()->constrained();
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

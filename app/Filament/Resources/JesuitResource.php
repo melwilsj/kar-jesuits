@@ -8,9 +8,13 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
+use App\Traits\HasResourceScoping;
+use Filament\Tables\Filters\Filter;
 
 class JesuitResource extends Resource
 {
+    use HasResourceScoping;
+
     protected static ?string $model = User::class;
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Member Management';
@@ -74,6 +78,14 @@ class JesuitResource extends Resource
                     ->label('Formation Stage'),
             ])
             ->filters([
+                Filter::make('view_type')
+                    ->label('View')
+                    ->select([
+                        'province' => 'Province Only',
+                        'province_region' => 'Province + Regions',
+                    ])
+                    ->default('province_region')
+                    ->visible(fn () => auth()->user()->isProvinceAdmin()),
                 Tables\Filters\SelectFilter::make('type'),
                 Tables\Filters\SelectFilter::make('province_id')
                     ->relationship('province', 'name'),
@@ -101,5 +113,13 @@ class JesuitResource extends Resource
             'view' => Pages\ViewJesuit::route('/{record}'),
             'edit' => Pages\EditJesuit::route('/{record}/edit'),
         ];
+    }
+
+    // Override for specific Jesuit scoping
+    protected static function applyProvinceScope($query, $provinceId)
+    {
+        return $query->whereHas('jesuit', function($q) use ($provinceId) {
+            $q->where('province_id', $provinceId);
+        });
     }
 } 

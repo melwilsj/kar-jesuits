@@ -12,6 +12,7 @@ class RegionFactory extends Factory
         return [
             'name' => $this->faker->unique()->city(),
             'code' => $this->faker->unique()->bothify('REG-###'),
+            'country' => 'India',
             'description' => $this->faker->sentence(),
             'province_id' => Province::first()->id ?? Province::factory(),
         ];

@@ -16,14 +16,14 @@ class AssistancySeeder extends Seeder
                 'description' => 'South Asian Assistancy'
             ],
             [
-                'name' => 'East Asia',
-                'code' => 'EAA',
-                'description' => 'East Asian Assistancy'
-            ],
-            [
                 'name' => 'Africa',
                 'code' => 'AFR',
                 'description' => 'African Assistancy'
+            ],
+            [
+                'name' => 'East Asia',
+                'code' => 'EAA',
+                'description' => 'East Asian Assistancy'
             ],
             [
                 'name' => 'Latin America',

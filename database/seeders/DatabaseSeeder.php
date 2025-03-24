@@ -17,9 +17,13 @@ class DatabaseSeeder extends Seeder
             DocumentCategorySeeder::class,
             RolesAndPermissionsSeeder::class,
             CommunitiesSeeder::class,
-            UsersSeeder::class,
+            JesuitsSeeder::class,
+            AdminUsersSeeder::class,
+            CommissionsSeeder::class,
             UpdateRelationshipsSeeder::class,
             FormationSeeder::class,
+            EventsSeeder::class,
+            NotificationsSeeder::class
         ]);
     }
 }

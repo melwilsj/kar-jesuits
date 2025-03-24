@@ -17,6 +17,12 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\SuperadminMiddleware;
+use App\Filament\Resources\JesuitResource;
+use App\Filament\Resources\CommunityResource;
+use App\Filament\Resources\ProvinceResource;
+// use App\Filament\Resources\AssistancyResource;
+// use App\Filament\Resources\SystemConfigResource;
+
 class SuperadminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -27,8 +33,8 @@ class SuperadminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Red,
             ])
-            ->discoverResources(in: app_path('Filament/Superadmin/Resources'), for: 'App\\Filament\\Superadmin\\Resources')
-            ->discoverPages(in: app_path('Filament/Superadmin/Pages'), for: 'App\\Filament\\Superadmin\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
@@ -50,6 +56,13 @@ class SuperadminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 SuperadminMiddleware::class,
+            ])
+            ->resources([
+                JesuitResource::class,
+                CommunityResource::class,
+                ProvinceResource::class,
+                //AssistancyResource::class,
+                //SystemConfigResource::class,
             ]);
     }
 }

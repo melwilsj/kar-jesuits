@@ -39,6 +39,7 @@ class CommunityFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_attached_house' => true,
+            'parent_community_id' => fn() => Community::first()->id,
             'superior_type' => 'Coordinator'
         ]);
     }
@@ -48,7 +49,7 @@ class CommunityFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'province_id' => null,
             'region_id' => null,
-            'assistancy_id' => fn() => Assistancy::factory()->create()->id,
+            'assistancy_id' => fn() => Assistancy::first()->id,
             'is_common_house' => true
         ]);
     }

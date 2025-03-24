@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Community;
+use App\Models\Province;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InstitutionFactory extends Factory
@@ -12,12 +13,24 @@ class InstitutionFactory extends Factory
         $type = $this->faker->randomElement([
             'school', 'college', 'university', 'hostel', 
             'community_college', 'iti', 'parish', 
-            'social_centre', 'farm', 'ngo', 'other'
+            'social_centre', 'farm', 'retreat_center', 'other'
         ]);
+        $name = match($type) {
+            'school' => 'St. ' . $this->faker->firstName('male') . ' School',
+            'college' => $this->faker->randomElement(['St. ', 'Sacred Heart ', 'Loyola ', '']) . $this->faker->lastName() . ' College',
+            'university' => $this->faker->randomElement(['St. ', 'Sacred Heart ', 'Loyola ', '']) . $this->faker->lastName() . ' University',
+            'hostel' => 'St. ' . $this->faker->firstName('male') . ' Hostel',
+            'community_college' => $this->faker->randomElement(['St. ', 'Sacred Heart ', 'Loyola ', '']) . $this->faker->lastName() . ' Community College',
+            'iti' => $this->faker->randomElement(['St. ', 'Sacred Heart ', 'Loyola ', '']) . $this->faker->lastName() . ' ITI',
+            'parish' => 'St. ' . $this->faker->firstName('male') . ' Church',
+            'retreat_center' => $this->faker->randomElement(['Sacred Heart', 'Divine', 'Holy Spirit', 'Ignatian']) . ' Retreat Center',
+            'social_centre' => $this->faker->lastName() . ' Social Service Center',
+            default => $this->faker->company()
+        };
 
         return [
-            'name' => $this->faker->company(),
-            'community_id' => Community::factory(),
+            'name' => $name,
+            'code' => strtoupper($this->faker->unique()->regexify('[A-Z]{3}[0-9]{2}')),
             'type' => $type,
             'description' => $this->faker->paragraph(),
             'contact_details' => [

@@ -10,7 +10,8 @@ class RegionSeeder extends Seeder
     public function run(): void
     {
         $regions = [
-            ['name' => 'Kohima' , 'code' => 'KHM',  'province_id' => 1],
+            ['name' => 'Kohima' , 'code' => 'KHM',  'province_id' => 1, 'country' => 'India'],
+            ['name' => 'Nepal' , 'code' => 'NEP',  'province_id' => 2, 'country' => 'Nepal']
             ];
 
         foreach ($regions as $region) {

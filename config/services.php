@@ -38,8 +38,9 @@ return [
     'firebase' => [
         'api_key' => env('FIREBASE_API_KEY'),
         'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
+        'credentials' => env('FIREBASE_CREDENTIALS'),
         'project_id' => env('FIREBASE_PROJECT_ID'),
-        'app_id' => env('FIREBASE_APP_ID'),
+        'app_id' => env('FIREBASE_APP_ID')
     ],
 
 ];

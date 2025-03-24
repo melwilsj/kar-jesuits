@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 
 class Jesuit extends BaseModel
 {
@@ -106,10 +107,25 @@ class Jesuit extends BaseModel
             ->exists();
     }
 
+    public function formationStages()
+    {
+        return $this->belongsToMany(FormationStage::class, 'jesuit_formations')
+            ->withPivot(['start_date', 'end_date', 'current_year', 'status', 'notes'])
+            ->withTimestamps();
+    }
+
+    public function currentFormation()
+    {
+        return $this->formationStages()
+            ->wherePivot('status', 'active')
+            ->orderByPivot('start_date', 'desc')
+            ->first();
+    }
+
     public function isInFormation(): bool
     {
-        return $this->formationHistory()
-            ->where('is_active', true)
+        return $this->formationStages()
+            ->wherePivot('status', 'active')
             ->exists();
     }
 
@@ -170,5 +186,28 @@ class Jesuit extends BaseModel
             'status' => $status,
             'remarks' => 'New assignment'
         ]);
+    }
+
+    public function region(): BelongsTo
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::saved(function ($jesuit) {
+            Cache::forget("province_data_{$jesuit->province_id}");
+        });
+        
+        static::deleted(function ($jesuit) {
+            Cache::forget("province_data_{$jesuit->province_id}");
+        });
     }
 } 

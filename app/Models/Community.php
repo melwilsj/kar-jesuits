@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Cache;
 
 class Community extends BaseModel
 {
@@ -82,16 +83,17 @@ class Community extends BaseModel
         return $this->hasMany(FormationHistory::class);
     }
 
-    public function superior()
+    public function superior(): BelongsTo
     {
-        $currentAssignment = $this->roleAssignments()
-            ->where('is_active', true)
-            ->whereHas('roleType', function($query) {
-                $query->whereIn('name', RoleTypes::SUPERIOR_ROLES);
-            })
-            ->first();
-
-        return $currentAssignment?->jesuit;
+        return $this->belongsTo(Jesuit::class, 'id', 'id')
+            ->whereHas('roleAssignments', function($query) {
+                $query->where('is_active', true)
+                    ->where('assignable_type', Community::class)
+                    ->where('assignable_id', $this->id)
+                    ->whereHas('roleType', function($q) {
+                        $q->whereIn('name', RoleTypes::SUPERIOR_ROLES);
+                    });
+            });
     }
 
     public function superiorHistory()
@@ -252,5 +254,18 @@ class Community extends BaseModel
         }
         
         $this->assignSuperior($jesuit, $roleType, $startDate);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::saved(function ($community) {
+        Cache::forget("province_data_{$community->province_id}");
+    });
+    
+    static::deleted(function ($community) {
+            Cache::forget("province_data_{$community->province_id}");
+        });
     }
 } 

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->unique()->constrained();
             $table->foreignId('province_id')->constrained();
+            $table->foreignId('region_id')->nullable()->constrained();
             $table->foreignId('current_community_id')->nullable()->constrained('communities');
             $table->string('code')->unique()->comment('Unique Jesuit identification code');
             $table->enum('category', ['Bp', 'P', 'S', 'NS', 'F'])->comment('Bishop, Priest, Scholastic, Novice, Brother');
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->index(['province_id', 'category']);
+            $table->index(['region_id', 'is_active']);
             $table->index(['is_external', 'prefix_modifier']);
         });
 
@@ -51,6 +53,7 @@ return new class extends Migration
             $table->foreignId('jesuit_id')->constrained();
             $table->foreignId('community_id')->nullable()->constrained();
             $table->foreignId('province_id')->nullable()->constrained();
+            $table->foreignId('region_id')->nullable()->constrained();
             $table->foreignId('assistancy_id')->nullable()->constrained();
             $table->enum('category', ['Bp', 'P', 'S', 'NS', 'F']);
             $table->date('start_date');
