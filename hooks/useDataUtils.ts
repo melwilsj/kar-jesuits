@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DataStorage } from '../services/storage';
-import { Jesuit, Community, Institution } from '../types/api';
+import { Jesuit, Community, Institution, Event } from '../types/api';
 import { useAuth } from './useAuth';
 import { useDataSync } from './useDataSync';
 
@@ -220,4 +220,44 @@ export const getInstitutionsByType = async (type: string) => {
     console.error('Error fetching institutions by type:', error);
     return [];
   }
+};
+
+// Hook for fetching a single Event by ID
+export const useEvent = (id: number) => {
+  const { user } = useAuth();
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Reset state when ID changes
+    setEvent(null);
+    setLoading(true);
+    
+    const loadEvent = async () => {
+      try {
+        const events = await DataStorage.getEvents();
+        
+        if (events && Array.isArray(events)) {
+          const foundEvent = events.find((e: Event) => e.id === id);
+          setEvent(foundEvent || null);
+        } else {
+          console.error('Invalid events data structure', events);
+          setEvent(null);
+        }
+      } catch (error) {
+        console.error('Error loading event:', error);
+        setEvent(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && id) {
+      loadEvent();
+    } else {
+      setLoading(false);
+    }
+  }, [id, user]);
+
+  return { event, loading };
 };

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { dataAPI } from '../services/api';
 import { DataStorage } from '../services/storage';
-import { CommunitiesResponse, ProvinceJesuitsResponse, InstitutionsResponse } from '../types/api';
+import { CommunitiesResponse, ProvinceJesuitsResponse, InstitutionsResponse, Event } from '../types/api';
 import { Commission } from '../types/api';
 
 export const useDataSync = () => {
@@ -14,12 +14,14 @@ export const useDataSync = () => {
   const [communities, setCommunities] = useState<CommunitiesResponse['data']>([]);
   const [institutions, setInstitutions] = useState<InstitutionsResponse['data']>([]);
   const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   
   const syncData = async (force = false, background = false) => {
     if (!user) {
       // Clear local data on logout
       setProvinceData(null);
       setCommunities([]);
+      setEvents([]);
       return;
     }
     
@@ -46,11 +48,12 @@ export const useDataSync = () => {
         }, 2000);
         
         try {
-          // Make API requests in parallel
-          const [jesuitResponse, communitiesResponse, institutionsResponse] = await Promise.all([
+          // Make API requests in parallel, including events
+          const [jesuitResponse, communitiesResponse, institutionsResponse, eventsResponse] = await Promise.all([
             dataAPI.fetchJesuits(),
             dataAPI.fetchCommunities(),
-            dataAPI.fetchInstitutions()
+            dataAPI.fetchInstitutions(),
+            dataAPI.fetchUpcomingEvents()
           ]);
           
           // Clear interval and set progress to 80% when requests complete
@@ -65,6 +68,7 @@ export const useDataSync = () => {
             DataStorage.saveJesuits(jesuitResponse.data),
             DataStorage.saveCommunities(communitiesResponse.data.data),
             DataStorage.saveInstitutions(institutionsResponse.data),
+            DataStorage.saveEvents(eventsResponse.data),
             DataStorage.updateLastSync(),
             fetchCommissions()
           ]);
@@ -73,6 +77,7 @@ export const useDataSync = () => {
           setProvinceData(jesuitResponse.data.data);
           setCommunities(communitiesResponse.data.data);
           setInstitutions(institutionsResponse.data);
+          setEvents(eventsResponse.data);
         } catch (error) {
           // Make sure to clear the interval if there's an error
           if (progressInterval) {
@@ -83,11 +88,12 @@ export const useDataSync = () => {
         }
       } else {
         // Only load data if we haven't already
-        if (!provinceData || communities.length === 0) {
-          const [storedJesuits, storedCommunities, storedInstitutions] = await Promise.all([
+        if (!provinceData || communities.length === 0 || events.length === 0) {
+          const [storedJesuits, storedCommunities, storedInstitutions, storedEvents] = await Promise.all([
             DataStorage.getJesuits(),
             DataStorage.getCommunities(),
-            DataStorage.getInstitutions()
+            DataStorage.getInstitutions(),
+            DataStorage.getEvents()
           ]);
           
           // Ensure the data structure is correct
@@ -108,6 +114,7 @@ export const useDataSync = () => {
           
           setCommunities(storedCommunities || []);
           setInstitutions(storedInstitutions || []);
+          setEvents(storedEvents || []);
         }
       }
     } catch (error) {
@@ -137,6 +144,7 @@ export const useDataSync = () => {
       setProvinceData(null);
       setCommunities([]);
       setInstitutions([]);
+      setEvents([]);
     }
   }, [user]);
 
@@ -150,6 +158,7 @@ export const useDataSync = () => {
     members: provinceData?.members || [],
     communities: communities || [],
     institutions: institutions || [],
+    events: events || [],
     currentJesuit,
     commissions
   };

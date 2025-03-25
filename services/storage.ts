@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CommunitiesResponse, ProvinceJesuitsResponse, InstitutionsResponse } from '../types/api';
+import { CommunitiesResponse, ProvinceJesuitsResponse, InstitutionsResponse, Event } from '../types/api';
 
 const STORAGE_KEYS = {
   JESUITS: 'jesuits_data',
   COMMUNITIES: 'communities_data',
   INSTITUTIONS: 'institutions_data',
+  EVENTS: 'events_data',
   LAST_SYNC: 'last_sync_timestamp',
   PAGINATED_RESULTS: 'paginated_results',
 };
@@ -156,5 +157,24 @@ export const DataStorage = {
     } catch (error) {
       console.error('Error clearing old paginated results:', error);
     }
-  }
+  },
+
+  async saveEvents(data: Event[]) {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving events:', error);
+      throw error;
+    }
+  },
+
+  async getEvents() {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.EVENTS);
+      return data ? JSON.parse(data).data as Event[] : [];
+    } catch (error) {
+      console.error('Error getting events:', error);
+      return [];
+    }
+  },
 }; 

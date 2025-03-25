@@ -214,6 +214,22 @@ export interface PaginatedJesuitsResponse {
   meta: any | null;
 }
 
+// Add Event type
+export interface Event {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  event_type: string;
+  start_datetime: string;
+  end_datetime: string;
+  venue: string | null;
+  province: string;
+  region: string | null;
+  community: string;
+  attachments: any[];
+}
+
 // Use in API calls
 export const dataAPI = {
   fetchJesuits: () => executeWithRetry(() => 

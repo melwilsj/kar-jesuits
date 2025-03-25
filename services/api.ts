@@ -143,4 +143,6 @@ export const dataAPI = {
   fetchGeographicalStats: () => executeWithRetry(() => api.get('/province/statistics/geographical')),
   fetchMinistryStats: () => executeWithRetry(() => api.get('/province/statistics/ministry')),
   fetchYearlyTrendsStats: () => executeWithRetry(() => api.get('/province/statistics/yearly-trends')),
+  fetchUpcomingEvents: () => executeWithRetry(() => api.get('/events/upcoming')),
+  fetchPastEvents: () => executeWithRetry(() => api.get('/events/past')),
 }; 
