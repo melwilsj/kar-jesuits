@@ -4,6 +4,7 @@ const Colors = {
   background: '#FFFFFF',
   text: '#111827',
   error: '#DC2626',
+  warning: '#F59E0B',
   success: '#059669',
   border: '#E5E7EB',
   gray: {
@@ -17,6 +18,15 @@ const Colors = {
     700: '#374151',
     800: '#1F2937',
     900: '#111827',
+  },
+  blue: {
+    500: '#1E40AF',
+  },
+  green: {
+    500: '#059669',
+  },
+  orange: {
+    500: '#F59E0B',
   },
   white: '#FFFFFF',
 };

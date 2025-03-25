@@ -145,4 +145,7 @@ export const dataAPI = {
   fetchYearlyTrendsStats: () => executeWithRetry(() => api.get('/province/statistics/yearly-trends')),
   fetchUpcomingEvents: () => executeWithRetry(() => api.get('/events/upcoming')),
   fetchPastEvents: () => executeWithRetry(() => api.get('/events/past')),
+  fetchNotifications: () => executeWithRetry(() => api.get('/notifications')),
+  markNotificationAsRead: (id: number) => executeWithRetry(() => api.post(`/notifications/${id}/read`)),
+
 }; 
