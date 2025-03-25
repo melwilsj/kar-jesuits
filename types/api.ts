@@ -1,4 +1,8 @@
 import { api, executeWithRetry } from "@/services/api";
+import { Role, Institution } from "./institution";
+
+// Re-export the Institution type
+export { Institution, Role };
 
 export interface ApiResponse<T> {
   data: T;
@@ -69,11 +73,6 @@ export interface Community {
   superior: null | any;
 }
 
-interface Role {
-  type: string;
-  institution: string;
-}
-
 export interface Jesuit {
   id: number;
   user_id: number;
@@ -114,6 +113,12 @@ export interface CommunitiesResponse {
   success: boolean;
   message: string;
   data: Community[];
+}
+
+export interface InstitutionsResponse {
+  success: boolean;
+  message: string;
+  data: Institution[];
 }
 
 export interface CurrentJesuit {
@@ -159,27 +164,6 @@ export interface CurrentJesuit {
     type: string;
     url: string;
   }[];
-}
-
-export interface Institution {
-  id: number;
-  name: string;
-  type: 'educational' | 'social_center' | 'parish' | 'other';
-  diocese: string;
-  address?: string;
-  established?: string;
-  province_id: number;
-  community_id?: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  deleted_at?: string;
-  community?: Community;
-  province?: {
-    id: number;
-    name: string;
-    code: string;
-  };
 }
 
 export interface Commission {
@@ -260,6 +244,9 @@ export const dataAPI = {
   ),
   
   // Institution filters
+  fetchInstitutions: () => executeWithRetry(() => 
+    api.get<ApiResponse<Institution[]>>('/province/institutions')
+  ),
   fetchEducationalInstitutions: () => executeWithRetry(() => 
     api.get<ApiResponse<Institution[]>>('/province/institutions/educational')
   ),

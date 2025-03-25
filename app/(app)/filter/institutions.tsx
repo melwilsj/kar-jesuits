@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -11,8 +11,18 @@ import InstitutionSkeleton from '@/components/ui/skeletons/InstitutionSkeleton';
 
 export default function InstitutionsFilterScreen() {
   const router = useRouter();
-  const { institutions } = useDataSync();
-  const { results, isLoading, error, applyFilters } = useFilteredData();
+  const { communities } = useDataSync();
+  const { 
+    results = [], 
+    isLoading = false, 
+    error = null, 
+    pagination = null, 
+    applyFilters = async () => {}, 
+    loadNextPage = async () => {}, 
+    loadPrevPage = async () => {},
+    clearCache = () => {}
+  } = useFilteredData() || {};
+  
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
@@ -20,167 +30,231 @@ export default function InstitutionsFilterScreen() {
   // Filter options
   const filterOptions = [
     { id: 'educational', label: 'Educational Institutes', icon: 'school' },
-    { id: 'social_centers', label: 'Social Centers', icon: 'people' },
-    { id: 'parishes', label: 'Parishes', icon: 'church' },
+    { id: 'social_center', label: 'Social Centers', icon: 'people' },
+    { id: 'retreat_center', label: 'Retreat Centers', icon: 'location-city' },
+    { id: 'parish', label: 'Parishes', icon: 'church' },
     { id: 'diocese', label: 'Diocese', icon: 'location-city' },
   ];
   
   // Get all unique dioceses
-  const dioceseOptions = [...new Set(institutions?.map(i => i.diocese).filter(Boolean))].sort() || [];
+  const dioceseOptions = useMemo(() => {
+    return [...new Set(communities?.map(i => i.diocese).filter(Boolean))].sort() || [];
+  }, [communities]);
   
-  const handleFilterSelect = (filterId: string) => {
-    setActiveFilter(filterId);
-    setSelectedOption(null);
-    
-    // For filters that don't need additional options
-    if (['educational', 'social_centers', 'parishes'].includes(filterId)) {
-      handleOptionSelect(filterId);
-    }
-  };
-  
-  const handleOptionSelect = async (option: string) => {
-    setSelectedOption(option);
-    
-    // Apply filters based on selection
-    if (activeFilter === 'diocese') {
-      await applyFilters({
-        category: 'province_institutions',
-        subcategory: 'diocese',
-        options: { diocese: option }
-      });
-    } else if (['educational', 'social_centers', 'parishes'].includes(activeFilter || '')) {
-      await applyFilters({
-        category: 'province_institutions',
-        subcategory: activeFilter || '',
-        options: {}
-      });
-    }
-  };
-  
-  // Show options based on active filter
-  const renderOptions = () => {
-    if (!activeFilter) return null;
-    
-    if (activeFilter === 'diocese') {
-      return (
-        <View style={styles.optionsContainer}>
-          <Text style={styles.optionsTitle}>Select Diocese</Text>
-          <ScrollView style={styles.optionsList}>
-            {dioceseOptions.map(diocese => (
-              <TouchableOpacity
-                key={diocese}
-                style={[
-                  styles.optionItem,
-                  selectedOption === diocese && styles.selectedOption
-                ]}
-                onPress={() => handleOptionSelect(diocese)}
-              >
-                <Text style={styles.optionText}>{diocese}</Text>
-                {selectedOption === diocese && (
-                  <MaterialIcons name="check" size={18} color={Colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      );
-    }
-    
-    // For other filters that don't need additional options
-    return (
-      <View style={styles.optionsContainer}>
-        <Text style={styles.optionsTitle}>Filter Applied</Text>
-        <Text style={styles.infoText}>
-          Showing results for {filterOptions.find(f => f.id === activeFilter)?.label}
-        </Text>
-      </View>
-    );
-  };
-  
+  // Handle window dimension changes
   useEffect(() => {
-    const subscription = Dimensions.addEventListener(
-      'change',
-      ({ window }) => {
-        setDimensions(window);
-      }
-    );
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setDimensions(window);
+    });
     return () => subscription?.remove();
   }, []);
   
+  // This effect will apply filters when activeFilter changes for direct filter types
+  useEffect(() => {
+    // For filters that don't need additional options, apply immediately
+    const applyDirectFilter = async () => {
+      if (!activeFilter) return;
+      
+      if (activeFilter === 'educational') {
+        await applyFilters({
+          category: 'province_institutions',
+          subcategory: 'educational',
+          options: { types: ['school', 'college', 'university', 'hostel', 'community_college', 'iti'] }
+        });
+      } else if (activeFilter === 'social_center') {
+        await applyFilters({
+          category: 'province_institutions',
+          subcategory: 'social_center',
+          options: { types: ['social_center', 'ngo'] }
+        });
+      } else if (activeFilter === 'retreat_center') {
+        await applyFilters({
+          category: 'province_institutions',
+          subcategory: 'retreat_center',
+          options: { types: ['retreat_center'] }
+        });
+      } else if (activeFilter === 'parish') {
+        await applyFilters({
+          category: 'province_institutions',
+          subcategory: 'parish',
+          options: { types: ['parish'] }
+        });
+      }
+      // Don't handle diocese here - it needs a selected option first
+    };
+    
+    if (['educational', 'social_center', 'retreat_center', 'parish'].includes(activeFilter || '')) {
+      applyDirectFilter();
+    }
+  }, [activeFilter, applyFilters]);
+  
+  // This effect will apply filters when selectedOption changes for diocese filter
+  useEffect(() => {
+    const applyDioceseFilter = async () => {
+      if (activeFilter === 'diocese' && selectedOption) {
+        await applyFilters({
+          category: 'province_institutions',
+          subcategory: 'diocese',
+          options: { diocese: selectedOption }
+        });
+      }
+    };
+    
+    if (activeFilter === 'diocese' && selectedOption) {
+      applyDioceseFilter();
+    }
+  }, [activeFilter, selectedOption, applyFilters]);
+  
+  const handleFilterSelect = (filterId: string) => {
+    // If selecting a new filter, clear selected option
+    if (activeFilter !== filterId) {
+      setSelectedOption(null);
+    }
+    
+    // Set the active filter
+    setActiveFilter(filterId);
+    
+    // The useEffect hooks will handle applying the filters based on the updated state
+  };
+  
+  const handleDioceseSelect = (diocese: string) => {
+    // Only update if it's different from current selection
+    if (diocese !== selectedOption) {
+      setSelectedOption(diocese);
+      // The useEffect hook will handle applying the filter
+    }
+  };
+  
+  // Calculate filter chips width based on screen size
+  const filterItemWidth = useMemo(() => {
+    const paddings = 24; // Total horizontal padding
+    const spacing = 8; // Spacing between items
+    const columns = dimensions.width > 600 ? 3 : 2; // Use 3 columns on larger screens
+    return (dimensions.width - paddings - (spacing * (columns - 1))) / columns;
+  }, [dimensions.width]);
+  
   return (
     <ScreenContainer>
-      <Stack.Screen options={{ title: 'Filter Institutions' }} />
+      <Stack.Screen 
+        options={{ 
+          title: 'Institutions', 
+          headerBackTitle: 'Home'
+        }} 
+      />
       
-      <View style={[
-        styles.container,
-        (dimensions.width < 600 || dimensions.height > dimensions.width) && 
-          styles.containerVertical
-      ]}>
-        <View style={styles.filterPanel}>
-          <Text style={styles.panelTitle}>Filter By</Text>
-          <ScrollView>
-            {filterOptions.map(filter => (
+      <View style={styles.container}>
+        {/* Filter Section */}
+        <View style={styles.filterSection}>
+          <Text style={styles.sectionTitle}>
+            Choose a category
+          </Text>
+          
+          <View style={styles.filterOptionsContainer}>
+            {filterOptions.map(option => (
               <TouchableOpacity
-                key={filter.id}
+                key={option.id}
                 style={[
-                  styles.filterItem,
-                  activeFilter === filter.id && styles.activeFilterItem
+                  styles.filterChip,
+                  activeFilter === option.id && styles.selectedFilterChip,
+                  { width: filterItemWidth }
                 ]}
-                onPress={() => handleFilterSelect(filter.id)}
+                onPress={() => handleFilterSelect(option.id)}
               >
-                <MaterialIcons 
-                  name={filter.icon as any} 
-                  size={20} 
-                  color={activeFilter === filter.id ? Colors.primary : Colors.gray[600]} 
+                <MaterialIcons
+                  name={option.icon as any}
+                  size={22}
+                  color={activeFilter === option.id ? Colors.primary : Colors.gray[600]}
                 />
-                <Text style={[
-                  styles.filterText,
-                  activeFilter === filter.id && styles.activeFilterText
-                ]}>
-                  {filter.label}
+                <Text 
+                  style={[
+                    styles.filterChipText,
+                    activeFilter === option.id && styles.selectedFilterChipText
+                  ]}
+                  numberOfLines={1}
+                >
+                  {option.label}
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
+          
+          {/* Secondary Options */}
+          {activeFilter === 'diocese' && (
+            <>
+              <Text style={[styles.sectionTitle, { marginTop: 16 }]}>
+                Select a Diocese
+              </Text>
+              
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.optionChipsContainer}
+              >
+                {dioceseOptions.length > 0 ? (
+                  dioceseOptions.map(diocese => (
+                    <TouchableOpacity
+                      key={diocese}
+                      style={[
+                        styles.optionChip,
+                        selectedOption === diocese && styles.selectedOptionChip
+                      ]}
+                      onPress={() => handleDioceseSelect(diocese)}
+                    >
+                      <Text 
+                        style={[
+                          styles.optionChipText,
+                          selectedOption === diocese && styles.selectedOptionChipText
+                        ]}
+                      >
+                        {diocese}
+                      </Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={styles.infoText}>No dioceses available</Text>
+                )}
+              </ScrollView>
+            </>
+          )}
         </View>
         
-        <View style={styles.contentPanel}>
-          {renderOptions()}
-          
-          <View style={styles.resultsContainer}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <InstitutionSkeleton />
-              </View>
-            ) : error ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : results.length > 0 ? (
-              <>
-                <Text style={styles.resultsTitle}>
-                  Results ({results.length})
-                </Text>
-                <ScrollView style={styles.resultsList}>
-                  {results.map(institution => (
-                    <InstitutionItem 
-                      key={institution.id} 
-                      institution={institution}
-                      onPress={() => router.push(`/institution/${institution.id}`)}
-                    />
-                  ))}
-                </ScrollView>
-              </>
-            ) : activeFilter ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No results found</Text>
-              </View>
-            ) : (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>Select a filter to see results</Text>
-              </View>
-            )}
-          </View>
+        {/* Results Section */}
+        <View style={styles.resultsContainer}>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.loadingText}>Loading institutions...</Text>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <MaterialIcons name="error-outline" size={32} color={Colors.error} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : results.length > 0 ? (
+            <>
+              <Text style={styles.resultsTitle}>
+                Found {results.length} {results.length === 1 ? 'institution' : 'institutions'}
+              </Text>
+              
+              <ScrollView style={styles.resultsList}>
+                {results.map((institution, index) => (
+                  <InstitutionItem
+                    key={`institution-${institution.id}-${index}`}
+                    institution={institution}
+                    onPress={() => router.push(`/institution/${institution.id}`)}
+                  />
+                ))}
+              </ScrollView>
+            </>
+          ) : activeFilter ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No institutions found</Text>
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Select a category to view institutions</Text>
+            </View>
+          )}
         </View>
       </View>
     </ScreenContainer>
@@ -190,75 +264,69 @@ export default function InstitutionsFilterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
+    padding: 12,
   },
-  containerVertical: {
-    flexDirection: 'column',
-  },
-  filterPanel: {
-    width: 250,
-    borderRightWidth: 1,
-    borderRightColor: Colors.gray[200],
-    padding: 16,
-  },
-  contentPanel: {
-    flex: 1,
-    padding: 16,
-  },
-  panelTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  filterSection: {
     marginBottom: 16,
-    color: Colors.gray[800],
   },
-  filterItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  activeFilterItem: {
-    backgroundColor: Colors.primary + '10',
-  },
-  filterText: {
-    marginLeft: 12,
-    fontSize: 14,
-    color: Colors.text,
-  },
-  activeFilterText: {
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  optionsContainer: {
-    marginBottom: 24,
-  },
-  optionsTitle: {
+  sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
     color: Colors.gray[800],
   },
-  optionsList: {
-    maxHeight: 200,
-  },
-  optionItem: {
+  filterOptionsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 8,
+  },
+  filterChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     backgroundColor: Colors.gray[100],
     marginBottom: 8,
   },
-  selectedOption: {
-    backgroundColor: Colors.primary + '10',
+  selectedFilterChip: {
+    backgroundColor: Colors.primary + '15',
+    borderWidth: 1,
+    borderColor: Colors.primary + '40',
   },
-  optionText: {
+  filterChipText: {
     fontSize: 14,
-    color: Colors.text,
+    marginLeft: 8,
+    color: Colors.gray[800],
+  },
+  selectedFilterChipText: {
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  optionChipsContainer: {
+    paddingVertical: 8,
+    gap: 8,
+  },
+  optionChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: Colors.gray[100],
+    marginRight: 8,
+  },
+  selectedOptionChip: {
+    backgroundColor: Colors.primary + '15',
+    borderWidth: 1,
+    borderColor: Colors.primary + '40',
+  },
+  optionChipText: {
+    fontSize: 14,
+    color: Colors.gray[800],
+  },
+  selectedOptionChipText: {
+    color: Colors.primary,
+    fontWeight: '500',
   },
   infoText: {
     fontSize: 14,
@@ -269,20 +337,11 @@ const styles = StyleSheet.create({
     flex: 1,
     borderTopWidth: 1,
     borderTopColor: Colors.gray[200],
-    paddingTop: 16,
-  },
-  resultsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: Colors.gray[800],
-  },
-  resultsList: {
-    flex: 1,
+    paddingTop: 12,
+    marginTop: 8,
   },
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    paddingTop: 16,
     alignItems: 'center',
   },
   loadingText: {
@@ -290,11 +349,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.gray[600],
   },
-  errorContainer: {
+  resultsList: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  resultsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: Colors.gray[800],
+  },
+  errorContainer: {
+    padding: 16,
     alignItems: 'center',
-    padding: 20,
   },
   errorText: {
     fontSize: 14,
@@ -310,5 +376,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.gray[600],
     textAlign: 'center',
+  },
+  paginationControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: Colors.gray[200],
+  },
+  paginationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  paginationButtonText: {
+    color: Colors.primary,
+    fontWeight: '500',
+    marginHorizontal: 4,
+  },
+  paginationInfo: {
+    color: Colors.gray[600],
   },
 });

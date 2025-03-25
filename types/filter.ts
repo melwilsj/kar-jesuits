@@ -16,6 +16,7 @@ export interface FilterOptions {
   diocese?: string;
   region?: string;
   type?: string;
+  types?: string[];
   birthdayFilter?: BirthdayFilter;
   // Add other filter options as needed
 }

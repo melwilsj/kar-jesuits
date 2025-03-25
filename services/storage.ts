@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CommunitiesResponse, ProvinceJesuitsResponse } from '../types/api';
+import { CommunitiesResponse, ProvinceJesuitsResponse, InstitutionsResponse } from '../types/api';
 
 const STORAGE_KEYS = {
   JESUITS: 'jesuits_data',
   COMMUNITIES: 'communities_data',
+  INSTITUTIONS: 'institutions_data',
   LAST_SYNC: 'last_sync_timestamp',
   PAGINATED_RESULTS: 'paginated_results',
 };
@@ -26,6 +27,14 @@ export const DataStorage = {
     }
   },
 
+  async saveInstitutions(data: InstitutionsResponse['data']) {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.INSTITUTIONS, JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving institutions:', error);
+    }
+  },
+
   async getJesuits() {
     try {
       const data = await AsyncStorage.getItem(STORAGE_KEYS.JESUITS);
@@ -42,6 +51,16 @@ export const DataStorage = {
       return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting communities:', error);
+      return null;
+    }
+  },
+
+  async getInstitutions() {
+    try {
+      const data = await AsyncStorage.getItem(STORAGE_KEYS.INSTITUTIONS);
+      return data ? JSON.parse(data).data as InstitutionsResponse['data'] : null;
+    } catch (error) {
+      console.error('Error getting institutions:', error);
       return null;
     }
   },

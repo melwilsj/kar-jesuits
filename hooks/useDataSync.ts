@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { dataAPI } from '../services/api';
 import { DataStorage } from '../services/storage';
-import { CommunitiesResponse, ProvinceJesuitsResponse } from '../types/api';
-import { Community } from '../types/api';
+import { CommunitiesResponse, ProvinceJesuitsResponse, InstitutionsResponse } from '../types/api';
 import { Commission } from '../types/api';
 
 export const useDataSync = () => {
@@ -13,6 +12,7 @@ export const useDataSync = () => {
   const [error, setError] = useState<string | null>(null);
   const [provinceData, setProvinceData] = useState<ProvinceJesuitsResponse['data'] | null>(null);
   const [communities, setCommunities] = useState<CommunitiesResponse['data']>([]);
+  const [institutions, setInstitutions] = useState<InstitutionsResponse['data']>([]);
   const [commissions, setCommissions] = useState<Commission[]>([]);
   
   const syncData = async (force = false, background = false) => {
@@ -34,29 +34,60 @@ export const useDataSync = () => {
       const shouldSync = force || !lastSync || Date.now() - lastSync > 24 * 60 * 60 * 1000;
 
       if (shouldSync) {
-        setProgress(20);
-        const jesuitResponse = await dataAPI.fetchJesuits();
+        setProgress(10);
         
-        setProgress(50);
-        const communitiesResponse = await dataAPI.fetchCommunities();
+        // Set up progress simulation
+        let progressInterval: NodeJS.Timeout | null = null;
+        progressInterval = setInterval(() => {
+          setProgress(prev => {
+            // Cap progress at 80% until requests complete
+            return prev < 80 ? prev + 1 : prev;
+          });
+        }, 2000);
         
-        setProgress(80);
-        await Promise.all([
-          DataStorage.saveJesuits(jesuitResponse.data),
-          DataStorage.saveCommunities(communitiesResponse.data.data),
-          DataStorage.updateLastSync(),
-          fetchCommissions()
-        ]);
-        
-        setProgress(100);
-        setProvinceData(jesuitResponse.data.data);
-        setCommunities(communitiesResponse.data.data);
+        try {
+          // Make API requests in parallel
+          const [jesuitResponse, communitiesResponse, institutionsResponse] = await Promise.all([
+            dataAPI.fetchJesuits(),
+            dataAPI.fetchCommunities(),
+            dataAPI.fetchInstitutions()
+          ]);
+          
+          // Clear interval and set progress to 80% when requests complete
+          if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+          }
+          setProgress(80);
+
+          // Save all data in parallel
+          await Promise.all([
+            DataStorage.saveJesuits(jesuitResponse.data),
+            DataStorage.saveCommunities(communitiesResponse.data.data),
+            DataStorage.saveInstitutions(institutionsResponse.data),
+            DataStorage.updateLastSync(),
+            fetchCommissions()
+          ]);
+          
+          setProgress(100);
+          setProvinceData(jesuitResponse.data.data);
+          setCommunities(communitiesResponse.data.data);
+          setInstitutions(institutionsResponse.data);
+        } catch (error) {
+          // Make sure to clear the interval if there's an error
+          if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+          }
+          throw error; // Re-throw to be caught by the outer try/catch
+        }
       } else {
         // Only load data if we haven't already
         if (!provinceData || communities.length === 0) {
-          const [storedJesuits, storedCommunities] = await Promise.all([
+          const [storedJesuits, storedCommunities, storedInstitutions] = await Promise.all([
             DataStorage.getJesuits(),
-            DataStorage.getCommunities()
+            DataStorage.getCommunities(),
+            DataStorage.getInstitutions()
           ]);
           
           // Ensure the data structure is correct
@@ -76,6 +107,7 @@ export const useDataSync = () => {
           }
           
           setCommunities(storedCommunities || []);
+          setInstitutions(storedInstitutions || []);
         }
       }
     } catch (error) {
@@ -104,6 +136,7 @@ export const useDataSync = () => {
       // Clear data when user logs out
       setProvinceData(null);
       setCommunities([]);
+      setInstitutions([]);
     }
   }, [user]);
 
@@ -116,6 +149,7 @@ export const useDataSync = () => {
     regions: provinceData?.regions || [],
     members: provinceData?.members || [],
     communities: communities || [],
+    institutions: institutions || [],
     currentJesuit,
     commissions
   };

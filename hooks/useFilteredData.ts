@@ -4,6 +4,7 @@ import { dataAPI } from '@/services/api';
 import { DataStorage } from '@/services/storage';
 import { FilterState } from '@/types/filter';
 import { Community, Jesuit, PaginatedData } from '@/types/api';
+import { getInstitutionsByType } from './useDataUtils';
 
 export interface PaginationInfo {
   currentPage: number;
@@ -64,11 +65,10 @@ export const useFilteredData = () => {
       } else {
         // Fetch data from API with filters
         const response = await fetchFilteredData(filters, page);
-        
         if (response.data && 'data' in response.data) {
           // Handle paginated response
           const paginatedData = response.data.data as PaginatedData<any>;
-          filteredResults = paginatedData.data;
+         filteredResults = paginatedData.data;
           paginationData = {
             currentPage: paginatedData.current_page,
             lastPage: paginatedData.last_page,
@@ -85,9 +85,9 @@ export const useFilteredData = () => {
               pagination: paginationData
             }
           }));
-        } else if (Array.isArray(response.data)) {
+        } else if (Array.isArray(response.data || response)) {
           // Handle regular array response
-          filteredResults = response.data;
+          filteredResults = response.data || response;        
           paginationData = {
             currentPage: 1, 
             lastPage: 1,
@@ -221,16 +221,10 @@ export const useFilteredData = () => {
     
     // Institutions filtering
     if (category === 'province_institutions') {
-      switch (subcategory) {
-        case 'educational':
-          return await dataAPI.fetchEducationalInstitutions();
-        case 'social_centers':
-          return await dataAPI.fetchSocialCenters();
-        case 'parishes':
-          return await dataAPI.fetchParishes();
-        default:
-          return { data: [] };
+      if(subcategory) {
+          return await getInstitutionsByType(subcategory);
       }
+      return { data: [] };
     }
     
     // Commission filtering

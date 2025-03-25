@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { DataStorage } from '../services/storage';
-import { Jesuit, Community } from '../types/api';
+import { Jesuit, Community, Institution } from '../types/api';
 import { useAuth } from './useAuth';
+import { useDataSync } from './useDataSync';
 
 // Hook for fetching a single Jesuit by ID
 export const useJesuit = (id: number) => {
@@ -104,6 +105,61 @@ export const useCommunity = (id: number) => {
   return { community, communityMembers, loading };
 };
 
+// Hook for fetching a single Institution by ID
+export const useInstitution = (id: number) => {
+  const { user } = useAuth();
+  const [institution, setInstitution] = useState<Institution | null>(null);
+  const [institutionJesuits, setInstitutionJesuits] = useState<Jesuit[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Reset state when ID changes
+    setInstitution(null);
+    setInstitutionJesuits([]);
+    setLoading(true);
+    
+    const loadInstitution = async () => {
+      try {
+        const institutions = await DataStorage.getInstitutions();
+        const jesuits = await DataStorage.getJesuits();
+        
+        // Find the institution
+        const foundInstitution = institutions?.find(
+          (i: Institution) => i.id === id
+        ) || null;
+        
+        setInstitution(foundInstitution);
+        
+        // Find jesuits associated with this institution if it exists
+        if (foundInstitution && jesuits) {
+          let jesuitsData = jesuits.members || jesuits.data?.members || [];
+          
+          // Find jesuits with roles in this institution
+          const associatedJesuits = jesuitsData.filter(
+            (jesuit: Jesuit) => jesuit.roles?.some(
+              role => role.institution === foundInstitution.name
+            )
+          );
+          
+          setInstitutionJesuits(associatedJesuits);
+        }
+      } catch (error) {
+        console.error('Error loading institution:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user && id) {
+      loadInstitution();
+    } else {
+      setLoading(false);
+    }
+  }, [id, user]);
+
+  return { institution, institutionJesuits, loading };
+};
+
 // Utility functions for direct data access
 export const getJesuitById = async (id: number) => {
   try {
@@ -130,5 +186,38 @@ export const getCommunityById = async (id: number) => {
   } catch (error) {
     console.error('Error fetching community:', error);
     return null;
+  }
+};
+
+export const getInstitutionById = async (id: number) => {
+  try {
+    const institutions = await DataStorage.getInstitutions();
+    return institutions?.find((i: Institution) => i.id === id) || null;
+  } catch (error) {
+    console.error('Error fetching institution:', error);
+    return null;
+  }
+};
+
+export const getInstitutionsByType = async (type: string) => {
+  try {
+    const institutions = await DataStorage.getInstitutions();
+    return institutions?.filter((i: Institution) => {
+      switch (type) {
+        case 'educational':
+          return i.type === 'school' || i.type === 'college' || i.type === 'university' || i.type === 'hostel' || i.type === 'community_college' || i.type === 'iti';
+        case 'social_center':
+          return i.type === 'social_center' || i.type === 'ngo';
+        case 'retreat_center':
+          return i.type === 'retreat_center';
+        case 'parish':
+          return i.type === 'parish';
+        default:
+          return false;
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching institutions by type:', error);
+    return [];
   }
 };

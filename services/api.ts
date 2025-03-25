@@ -132,6 +132,7 @@ export const dataAPI = {
   fetchJesuitsInOtherProvinces: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/other-provinces?page=${page}`)),
   fetchJesuitsOutsideIndia: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/outside-india?page=${page}`)),
   fetchOtherProvinceJesuitsResiding: (page: number) => executeWithRetry(() => api.get(`/province/jesuits/other-residing?page=${page}`)),
+  fetchInstitutions: () => executeWithRetry(() => api.get('/province/institutions')),
   fetchEducationalInstitutions: () => executeWithRetry(() => api.get('/province/institutions/educational')),
   fetchSocialCenters: () => executeWithRetry(() => api.get('/province/institutions/social-centers')),
   fetchParishes: () => executeWithRetry(() => api.get('/province/institutions/parishes')),
