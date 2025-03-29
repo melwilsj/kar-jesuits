@@ -31,7 +31,11 @@ class RoleTypesSeeder extends Seeder
             ['name' => 'Director', 'category' => 'institution', 'description' => 'Head of an Institution'],
             ['name' => 'Administrator', 'category' => 'institution', 'description' => 'Head of an Institution'],
             ['name' => 'Parish Priest', 'category' => 'institution', 'description' => 'Head of an Institution'],
-            ['name' => 'Assistant Parish Priest', 'category' => 'institution', 'description' => 'Head of an Institution'],
+            ['name' => 'Vice-Chancellor', 'category' => 'institution', 'description' => 'Head of an Institution'],
+
+            // Commission level roles
+            ['name' => 'Commission Head', 'category' => 'commission', 'description' => 'Head of a Commission'],
+            ['name' => 'Commission Member', 'category' => 'commission', 'description' => 'Member of a Commission'],
         ];
 
         foreach ($types as $type) {

@@ -2,15 +2,14 @@
 
 namespace App\Filament\Resources\JesuitResource\RelationManagers;
 
-use App\Models\FormationStage;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Forms;
 use Filament\Tables;
 
 class FormationHistoryRelationManager extends RelationManager
 {
-    protected static string $relationship = 'formationHistory';
-    protected static ?string $recordTitleAttribute = 'stage.name';
+    protected static string $relationship = 'jesuit.formationHistory';
+    protected static ?string $recordTitleAttribute = 'id';
 
     public function form(Forms\Form $form): Forms\Form
     {

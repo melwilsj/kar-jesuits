@@ -52,14 +52,22 @@ class Institution extends BaseModel
         return $this->morphMany(ExternalAssignment::class, 'assignable');
     }
 
-    public function superiors()
+    public function directors()
     {
         return $this->morphMany(RoleAssignment::class, 'assignable')
             ->whereHas('roleType', function($query) {
-                $query->where('name', 'Director')->orWhere('name', 'Principal');
+                $query->where('name', 'Director')
+                ->orWhere('name', 'Principal')
+                ->orWhere('name', 'Administrator')
+                ->orWhere('name', 'Parish Priest')
+                ->orWhere('name', 'Vice-Chancellor');
             })
             ->where('is_active', true)
-            ->with('jesuit');
+            ->with(['jesuit' => function($query) {
+                $query->select('id', 'user_id');
+            }, 'jesuit.user' => function($query) {
+                $query->select('id', 'name');
+            }]);
     }
 
     public function diocese()

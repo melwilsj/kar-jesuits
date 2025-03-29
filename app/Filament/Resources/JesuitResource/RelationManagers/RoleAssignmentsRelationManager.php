@@ -8,8 +8,8 @@ use Filament\Tables;
 
 class RoleAssignmentsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'roleAssignments';
-    protected static ?string $recordTitleAttribute = 'roleType.name';
+    protected static string $relationship = 'jesuit.roleAssignments';
+    protected static ?string $recordTitleAttribute = 'id';
 
     public function form(Forms\Form $form): Forms\Form
     {

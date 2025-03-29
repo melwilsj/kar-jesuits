@@ -35,7 +35,7 @@ A comprehensive Enterprise Resource Planning (ERP) system designed specifically 
 
 ### Frontend
 - **Web:** Laravel Blade + Livewire
-- **Mobile:** Flutter
+- **Mobile:** React Native
 
 ### Infrastructure
 - **Hosting:** Railway
@@ -54,7 +54,7 @@ The project uses a single repository with two main branches:
 - Database Management
 
 ### Mobile Platform (`mobile`, `mobile-dev`)
-- Flutter Mobile Application
+- React Native Mobile Application
 - API Integration
 - User Interface
 - Authentication
@@ -65,7 +65,7 @@ The project uses a single repository with two main branches:
 - PHP 8.1+
 - Composer
 - Node.js & npm
-- Flutter SDK
+- React Native SDK
 - PostgreSQL
 - Git
 
@@ -100,7 +100,7 @@ php artisan migrate
 git checkout mobile
 
 # Install dependencies
-flutter pub get
+npm install
 
 # Configure environment
 cp .env.example .env
@@ -108,7 +108,7 @@ cp .env.example .env
 
 ## 📱 Mobile Development
 ```bash
-flutter run
+npx expo start
 ```
 
 ## 🌐 Web Development

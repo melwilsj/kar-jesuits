@@ -45,6 +45,7 @@ class ProvinceDataController extends BaseController
         $transformedJesuits = $jesuits->map(function ($jesuit) use ($requestorRegionId) {
             $data = [
                 'id' => $jesuit->id,
+                'user_id' => $jesuit->user_id,
                 'name' => $jesuit->user->name,
                 'code' => $jesuit->code,
                 'category' => $jesuit->category,
@@ -54,12 +55,18 @@ class ProvinceDataController extends BaseController
                 'dob' => $jesuit->dob,
                 'joining_date' => $jesuit->joining_date,
                 'priesthood_date' => $jesuit->priesthood_date,
-                
+                'final_vows_date' => $jesuit->final_vows_date,
+                'academic_qualifications' => $jesuit->academic_qualifications,
+                'is_external' => $jesuit->is_external,
+                'notes' => $jesuit->notes,
                 // Add relationship flags
                 'province_only' => !$jesuit->region_id,
+                'province_id' => $jesuit->province_id,
                 'region_id' => $jesuit->region_id,
+
                 
                 // Current community
+                'current_community_id' => $jesuit->currentCommunity->id,
                 'current_community' => $jesuit->currentCommunity->name,
                 'province' => $jesuit->province->code,
                 'region' => $jesuit->region? $jesuit->region->code:null,

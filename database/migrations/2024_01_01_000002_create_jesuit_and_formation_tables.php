@@ -65,20 +65,6 @@ return new class extends Migration
             $table->index(['jesuit_id', 'start_date', 'end_date']);
         });
 
-        Schema::create('commission_members', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('commission_id')->constrained();
-            $table->foreignId('jesuit_id')->constrained();
-            $table->boolean('is_head')->default(false);
-            $table->date('start_date');
-            $table->date('end_date')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->text('notes')->nullable();
-            $table->timestamps();
-            
-            $table->index(['commission_id', 'is_head', 'is_active']);
-        });
-
         Schema::create('jesuit_formations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('jesuit_id')->constrained()->onDelete('cascade');

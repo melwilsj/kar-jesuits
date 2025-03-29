@@ -16,6 +16,8 @@ use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Support\Str;
+use App\Filament\Resources\NotificationResource;
+use Filament\Forms\Components\Section;
 
 class EventResource extends Resource
 {
@@ -62,89 +64,103 @@ class EventResource extends Resource
                         
                         Forms\Components\Toggle::make('is_public')
                             ->label('Public Event')
-                            ->default(true)
-                            ->helperText('If enabled, this event will be visible to all users'),
+                            ->helperText('If checked, this event will be visible to all users')
+                            ->default(true),
                         
                         Forms\Components\Toggle::make('is_recurring')
                             ->label('Recurring Event')
                             ->default(false)
                             ->reactive(),
                         
-                        Forms\Components\Select::make('recurrence_pattern')
+                        Forms\Components\TextInput::make('recurrence_pattern')
                             ->label('Recurrence Pattern')
-                            ->options([
-                                'yearly' => 'Yearly',
-                                'monthly' => 'Monthly',
-                                'weekly' => 'Weekly',
-                            ])
-                            ->visible(fn (callable $get) => $get('is_recurring'))
-                            ->required(fn (callable $get) => $get('is_recurring')),
-                        
+                            ->helperText('e.g., "Every Monday", "First Sunday of the month", etc.')
+                            ->hidden(fn (callable $get) => !$get('is_recurring'))
+                            ->maxLength(255),
                     ])->columns(2),
                 
                 Forms\Components\Card::make()
                     ->schema([
-                        Forms\Components\Heading::make('Event Scope')
+                        Forms\Components\Placeholder::make('event_scope_heading')
+                            ->label('Event Scope')
                             ->columnSpan(2),
-                            
+                        
                         Forms\Components\Select::make('province_id')
                             ->label('Province')
-                            ->options(Province::pluck('name', 'id'))
+                            ->options(function() {
+                                return Province::where('name', '!=', '')
+                                    ->whereNotNull('name')
+                                    ->pluck('name', 'id')
+                                    ->toArray();
+                            })
                             ->searchable()
                             ->reactive(),
                         
                         Forms\Components\Select::make('region_id')
                             ->label('Region')
-                            ->options(function (callable $get) {
+                            ->options(function(callable $get) {
                                 $provinceId = $get('province_id');
                                 if (!$provinceId) {
-                                    return Region::pluck('name', 'id');
+                                    return Region::where('name', '!=', '')
+                                        ->whereNotNull('name')
+                                        ->pluck('name', 'id')
+                                        ->toArray();
                                 }
-                                return Region::where('province_id', $provinceId)->pluck('name', 'id');
+                                
+                                return Region::where('province_id', $provinceId)
+                                    ->where('name', '!=', '')
+                                    ->whereNotNull('name')
+                                    ->pluck('name', 'id')
+                                    ->toArray();
                             })
                             ->searchable()
                             ->reactive(),
                         
                         Forms\Components\Select::make('community_id')
                             ->label('Community')
-                            ->options(function (callable $get) {
+                            ->options(function(callable $get) {
                                 $regionId = $get('region_id');
-                                $provinceId = $get('province_id');
-                                if (!$regionId && !$provinceId) {
-                                    return Community::pluck('name', 'id');
-                                } elseif ($regionId) {
-                                    return Community::where('region_id', $regionId)->pluck('name', 'id');
-                                } else {
-                                    return Community::whereHas('region', function ($query) use ($provinceId) {
-                                        $query->where('province_id', $provinceId);
-                                    })->pluck('name', 'id');
+                                if (!$regionId) {
+                                    return Community::where('name', '!=', '')
+                                        ->whereNotNull('name')
+                                        ->pluck('name', 'id')
+                                        ->toArray();
                                 }
+                                
+                                return Community::where('region_id', $regionId)
+                                    ->where('name', '!=', '')
+                                    ->whereNotNull('name')
+                                    ->pluck('name', 'id')
+                                    ->toArray();
                             })
                             ->searchable(),
                         
                         Forms\Components\Select::make('jesuit_id')
                             ->label('Jesuit')
-                            ->options(Jesuit::all()->mapWithKeys(function ($jesuit) {
-                                return [$jesuit->id => $jesuit->full_name];
-                            }))
-                            ->searchable()
-                            ->helperText('Only select if this event is specific to a particular Jesuit'),
-                    ])
-                    ->columns(2),
-                
+                            ->options(function() {
+                                return Jesuit::query()
+                                    ->join('users', 'jesuits.user_id', '=', 'users.id')
+                                    ->whereNotNull('users.name')
+                                    ->where('users.name', '!=', '')
+                                    ->pluck('users.name', 'jesuits.id')
+                                    ->toArray();
+                            })
+                            ->searchable(),
+                    ])->columns(2),
+                    
                 Forms\Components\Card::make()
                     ->schema([
-                        Forms\Components\Heading::make('Event Attachments')
+                        Forms\Components\Placeholder::make('event_attachments_heading')
+                            ->label('Event Attachments')
                             ->columnSpan(2),
-                        
+                            
                         Forms\Components\FileUpload::make('attachments')
                             ->label('Attachments (Images and Documents)')
                             ->multiple()
                             ->enableOpen()
                             ->enableDownload()
                             ->columnSpan(2),
-                    ])
-                    ->columns(2),
+                    ])->columns(2),
             ]);
     }
 
@@ -205,7 +221,11 @@ class EventResource extends Resource
                 Tables\Actions\Action::make('create_notification')
                     ->label('Send Notification')
                     ->icon('heroicon-o-bell')
-                    ->url(fn (Event $record): string => route('filament.resources.notifications.create', ['event_id' => $record->id]))
+                    ->url(function (Event $record) {
+                        return NotificationResource::getUrl('create', [
+                            'event_id' => $record->id
+                        ]);
+                    })
                     ->openUrlInNewTab(),
             ])
             ->bulkActions([

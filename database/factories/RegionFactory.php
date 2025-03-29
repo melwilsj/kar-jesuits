@@ -15,6 +15,7 @@ class RegionFactory extends Factory
             'country' => 'India',
             'description' => $this->faker->sentence(),
             'province_id' => Province::first()->id ?? Province::factory(),
+            'assistancy_id' => Assistancy::first()->id ?? Assistancy::factory(),
         ];
     }
 }

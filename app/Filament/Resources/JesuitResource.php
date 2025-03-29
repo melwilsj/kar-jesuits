@@ -4,12 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\JesuitResource\Pages;
 use App\Models\User;
+use App\Models\Province;
+use App\Models\Jesuit;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use App\Traits\HasResourceScoping;
-use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 
 class JesuitResource extends Resource
 {
@@ -25,14 +27,45 @@ class JesuitResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Basic Information')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required(),
-                        Forms\Components\TextInput::make('email')
-                            ->email()
-                            ->required(),
-                        Forms\Components\TextInput::make('phone_number')
-                            ->tel(),
-                        Forms\Components\Select::make('type')
+                        Forms\Components\Select::make('user_id')
+                            ->label('User Account')
+                            ->options(function() {
+                                return User::whereDoesntHave('jesuit')
+                                    ->orWhere('id', fn ($query) => 
+                                        $query->select('user_id')
+                                            ->from('jesuits')
+                                            ->whereColumn('users.id', 'jesuits.user_id')
+                                    )
+                                    ->pluck('name', 'id');
+                            })
+                            ->searchable()
+                            ->required()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->required(),
+                                Forms\Components\TextInput::make('email')
+                                    ->email()
+                                    ->required()
+                                    ->unique('users', 'email'),
+                                Forms\Components\TextInput::make('password')
+                                    ->password()
+                                    ->required()
+                                    ->confirmed(),
+                                Forms\Components\TextInput::make('password_confirmation')
+                                    ->password()
+                                    ->required(),
+                            ])
+                            ->createOptionAction(function (Forms\Components\Actions\Action $action) {
+                                return $action
+                                    ->modalHeading('Create New User')
+                                    ->modalWidth('md');
+                            }),
+                        
+                        Forms\Components\TextInput::make('code')
+                            ->required()
+                            ->maxLength(20),
+                        
+                        Forms\Components\Select::make('category')
                             ->options([
                                 'Bp' => 'Bishop',
                                 'P' => 'Priest',
@@ -71,29 +104,68 @@ class JesuitResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('type'),
-                Tables\Columns\TextColumn::make('province.name'),
-                Tables\Columns\TextColumn::make('currentCommunity.name'),
-                Tables\Columns\TextColumn::make('currentFormation.stage.name')
-                    ->label('Formation Stage'),
+                Tables\Columns\TextColumn::make('jesuit.code')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('jesuit.category')
+                    ->label('Type'),
+                Tables\Columns\TextColumn::make('jesuit.province.name')
+                    ->placeholder('N/A'),
+                Tables\Columns\TextColumn::make('jesuit.currentCommunity.name')
+                    ->placeholder('N/A'),
+                Tables\Columns\TextColumn::make('jesuit.currentFormation.stage.name')
+                    ->label('Formation Stage')
+                    ->placeholder('N/A'),
             ])
             ->filters([
-                Filter::make('view_type')
+                SelectFilter::make('view_type')
                     ->label('View')
-                    ->select([
+                    ->options([
                         'province' => 'Province Only',
                         'province_region' => 'Province + Regions',
                     ])
                     ->default('province_region')
                     ->visible(fn () => auth()->user()->isProvinceAdmin()),
-                Tables\Filters\SelectFilter::make('type'),
-                Tables\Filters\SelectFilter::make('province_id')
-                    ->relationship('province', 'name'),
+                
+                SelectFilter::make('type')
+                    ->label('Category')
+                    ->options([
+                        'Bp' => 'Bishop',
+                        'P' => 'Priest',
+                        'S' => 'Scholastic',
+                        'NS' => 'Novice Scholastic',
+                        'F' => 'Brother'
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        if (isset($data['value'])) {
+                            return $query->whereHas('jesuit', function ($query) use ($data) {
+                                $query->where('category', $data['value']);
+                            });
+                        }
+                    }),
+                
+                SelectFilter::make('province')
+                    ->label('Province')
+                    ->options(function() {
+                        return Province::pluck('name', 'id')->toArray();
+                    })
+                    ->query(function (Builder $query, array $data) {
+                        if (isset($data['value'])) {
+                            return $query->whereHas('jesuit', function ($query) use ($data) {
+                                $query->where('province_id', $data['value']);
+                            });
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        // Only get users who have a jesuit record
+        return parent::getEloquentQuery()->whereHas('jesuit');
     }
 
     public static function getRelations(): array

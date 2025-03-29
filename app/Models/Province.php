@@ -69,4 +69,9 @@ class Province extends BaseModel
     {
         return $this->jesuits()->where('is_active', true);
     }
+
+    public function members()
+    {
+        return $this->jesuits();
+    }
 }

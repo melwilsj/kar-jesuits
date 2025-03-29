@@ -11,7 +11,7 @@ class Region extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'description', 'province_id'];
+    protected $fillable = ['name', 'code', 'description', 'province_id', 'assistancy_id'];
 
     public function province(): BelongsTo
     {
@@ -21,5 +21,10 @@ class Region extends BaseModel
     public function communities(): HasMany
     {
         return $this->hasMany(Community::class);
+    }
+
+    public function assistancy(): BelongsTo
+    {
+        return $this->belongsTo(Assistancy::class);
     }
 } 

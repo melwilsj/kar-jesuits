@@ -30,6 +30,7 @@ return new class extends Migration
 
         Schema::create('regions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('assistancy_id')->constrained();
             $table->foreignId('province_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('code')->unique();
@@ -82,7 +83,7 @@ return new class extends Migration
             $table->enum('type', [
                 'school', 'college', 'university', 'hostel', 
                 'community_college', 'iti', 'parish', 
-                'social_centre', 'farm', 'ngo', 'retreat_center', 'other'
+                'social_center', 'farm', 'ngo', 'retreat_center', 'other'
             ]);
             $table->string('diocese')->nullable();
             $table->string('taluk')->nullable();

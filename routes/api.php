@@ -75,6 +75,7 @@ Route::prefix('v1')->group(function () {
 
         // 2. Institution Filters
         Route::prefix('province/institutions')->group(function () {
+            Route::get('/', [InstitutionController::class, 'all']);
             Route::get('/educational', [InstitutionController::class, 'educational']);
             Route::get('/social-centers', [InstitutionController::class, 'socialCenters']);
             Route::get('/parishes', [InstitutionController::class, 'parishes']);
@@ -83,7 +84,7 @@ Route::prefix('v1')->group(function () {
         // 3. Commission Filters
         Route::prefix('province/commissions')->group(function () {
             Route::get('/', [CommissionController::class, 'index']);
-            Route::get('/{type}', [CommissionController::class, 'byType']);
+            Route::get('/{code}', [CommissionController::class, 'byCode']);
         });
 
         // 4. Statistics
@@ -101,8 +102,10 @@ Route::prefix('v1')->group(function () {
         });
         Route::prefix('assistancy/{assistancy_id}')->group(function () {
             Route::get('/provinces', [SocietyDirectoryController::class, 'getProvincesByAssistancy']);
+            Route::get('/regions', [SocietyDirectoryController::class, 'getRegionsByAssistancy']);
         });
         Route::get('/province/{code}/communities', [SocietyDirectoryController::class, 'getCommunitiesByProvince']);
+        Route::get('/region/{code}/communities', [SocietyDirectoryController::class, 'getCommunitiesByRegion']);
 
         // Events
         Route::get('events/upcoming', [EventController::class, 'upcoming'])->name('events.upcoming');

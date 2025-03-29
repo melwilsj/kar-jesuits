@@ -78,7 +78,11 @@ class Commission extends BaseModel
                 $query->where('name', 'Commission Head');
             })
             ->where('is_active', true)
-            ->with('jesuit');
+            ->with(['jesuit' => function($query) {
+                $query->select('id', 'user_id');
+            }, 'jesuit.user' => function($query) {
+                $query->select('id', 'name', 'email', 'phone_number');
+            }]);
     }
 
     public function members()
@@ -88,6 +92,10 @@ class Commission extends BaseModel
                 $query->where('name', 'Commission Member');
             })
             ->where('is_active', true)
-            ->with('jesuit');
+            ->with(['jesuit' => function($query) {
+                $query->select('id', 'user_id');
+            }, 'jesuit.user' => function($query) {
+                $query->select('id', 'name', 'email', 'phone_number');
+            }]);
     }
 } 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Assistancy;
 use App\Models\Province;
+use App\Models\Region;
 use App\Models\Community;
 use Illuminate\Http\Request;
 use App\Constants\RoleTypes;
@@ -31,17 +32,53 @@ class SocietyDirectoryController extends BaseController
             
         return $this->successResponse($provinces);
     }
+
+    /**
+     * Get regions by assistancy
+     */
+    public function getRegionsByAssistancy(Request $request, $assistancy_id)
+    {
+        $regions = Region::where('assistancy_id', $assistancy_id)
+            ->where('is_active', true)
+            ->get();
+            
+        return $this->successResponse($regions);
+    }
     
     /**
      * Get communities by province code
      */
     public function getCommunitiesByProvince(Request $request, $code)
     {
-        $province = Province::where('code', $code)->first();
-        
-        if (!$province) {
-            return $this->errorResponse('Province not found', [], 404);
+        return $this->getCommunities($request, $code, 'province');
+    }
+
+    /**
+     * Get communities by region code
+     */
+    public function getCommunitiesByRegion(Request $request, $code)
+    {
+        return $this->getCommunities($request, $code, 'region');
+    }
+
+    /**
+     * Get communities by code and type
+     */
+    public function getCommunities(Request $request, $code, $type)
+    {
+        $province = null;
+        if ($type == 'province') {
+            $province = Province::where('code', $code)->first();
+            if (!$province) {
+                return $this->errorResponse('Province not found', [], 404);
+            }
+        } else if ($type == 'region') {
+            $province = Region::where('code', $code)->first();
+            if (!$province) {
+                return $this->errorResponse('Region not found', [], 404);
+            }
         }
+        
         
         $communities = Community::with([
             'institutions:id,community_id,name,type,address',
@@ -53,13 +90,16 @@ class SocietyDirectoryController extends BaseController
                     ->with(['jesuit.user:id,name,phone_number']);
             }
         ])
-        ->where('province_id', $province->id)
+        ->when($type == 'province', function($query) use ($province) {
+            return $query->where('province_id', $province->id)
+                        ->whereNull('region_id');
+        })
+        ->when($type == 'region', function($query) use ($province) {
+            return $query->where('region_id', $province->id);
+        })
         ->where('is_active', true)
         ->get();
         
-        return $this->successResponse([
-            'province' => $province,
-            'communities' => $communities
-        ]);
+        return $this->successResponse([$communities]);
     }
 } 

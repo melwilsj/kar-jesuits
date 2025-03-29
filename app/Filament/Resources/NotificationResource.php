@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Placeholder;
 
 class NotificationResource extends Resource
 {
@@ -55,9 +56,16 @@ class NotificationResource extends Resource
                         
                         Forms\Components\Select::make('event_id')
                             ->label('Related Event')
-                            ->options(Event::all()->mapWithKeys(function ($event) {
-                                return [$event->id => $event->title . ' (' . $event->start_datetime->format('Y-m-d') . ')'];
-                            }))
+                            ->options(function() {
+                                return Event::whereNotNull('title')
+                                    ->where('title', '!=', '')
+                                    ->whereNotNull('start_datetime')
+                                    ->get()
+                                    ->mapWithKeys(function ($event) {
+                                        return [$event->id => $event->title . ' (' . $event->start_datetime->format('Y-m-d') . ')'];
+                                    })
+                                    ->toArray();
+                            })
                             ->searchable(),
                         
                         Forms\Components\DateTimePicker::make('scheduled_for')
@@ -67,7 +75,8 @@ class NotificationResource extends Resource
                 
                 Forms\Components\Card::make()
                     ->schema([
-                        Forms\Components\Heading::make('Recipients')
+                        Placeholder::make('notification_details_heading')
+                            ->label('Notification Details')
                             ->columnSpan(2),
                         
                         Forms\Components\CheckboxList::make('recipient_types')

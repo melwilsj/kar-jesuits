@@ -82,7 +82,7 @@ class CommunitiesSeeder extends Seeder
     {
         $institutionTypes = ['school', 'college', 'university', 'hostel', 
             'community_college', 'iti', 'parish', 
-            'social_centre', 'farm', 'ngo', 'retreat_center', 'other'];
+            'social_center', 'farm', 'ngo', 'retreat_center', 'other'];
         
         // Create 2-3 institutions of different types for each community
         $selectedTypes = array_rand(array_flip($institutionTypes), rand(2, 3));

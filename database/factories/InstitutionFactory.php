@@ -13,7 +13,7 @@ class InstitutionFactory extends Factory
         $type = $this->faker->randomElement([
             'school', 'college', 'university', 'hostel', 
             'community_college', 'iti', 'parish', 
-            'social_centre', 'farm', 'retreat_center', 'other'
+            'social_center', 'farm', 'retreat_center', 'other'
         ]);
         $name = match($type) {
             'school' => 'St. ' . $this->faker->firstName('male') . ' School',

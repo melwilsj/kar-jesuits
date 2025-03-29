@@ -24,9 +24,9 @@ class EventsSeeder extends Seeder
         // Create birthday events for jesuits
         $jesuits = Jesuit::whereNotNull('dob')->get();
         $superadmin = User::where('email', 'melwilsj@jesuits.net')->first() ?? User::first();
-        
+        $count = 0;
         foreach ($jesuits as $jesuit) {
-            if (!$jesuit->dob) continue;
+            if (!$jesuit->dob || $count > 30) continue;
             
             // Create birthday event for this year
             $birthdayThisYear = Carbon::parse($jesuit->dob)->setYear(now()->year);
@@ -50,6 +50,7 @@ class EventsSeeder extends Seeder
                 'recurrence_pattern' => 'yearly',
                 'created_by' => $superadmin->id,
             ]);
+            $count++;
         }
         
         // Create jubilee celebrations (for jesuits who have been priests for 25, 50 years)

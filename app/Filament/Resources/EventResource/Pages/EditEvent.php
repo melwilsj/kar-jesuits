@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\EventResource\Pages;
 
 use App\Filament\Resources\EventResource;
+use App\Filament\Resources\NotificationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -17,7 +18,12 @@ class EditEvent extends EditRecord
             Actions\Action::make('create_notification')
                 ->label('Send Notification')
                 ->icon('heroicon-o-bell')
-                ->url(fn (): string => route('filament.resources.notifications.create', ['event_id' => $this->record->id]))
+                ->url(function () {
+                    // Use the correct route generation method from the NotificationResource
+                    return NotificationResource::getUrl('create', [
+                        'event_id' => $this->record->id
+                    ]);
+                })
                 ->openUrlInNewTab(),
         ];
     }

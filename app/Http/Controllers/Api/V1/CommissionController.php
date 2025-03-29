@@ -29,10 +29,16 @@ class CommissionController extends BaseController
 
         $commissions = Commission::with([
                 'province:id,name,code',
-                'members.user:id,name,email,phone_number',
-                'head.user:id,name,email,phone_number'
+                'members',
+                'head'
             ])
-            ->where('province_id', $jesuit->province_id)
+            ->when($jesuit->region_id == null, function($query) use ($jesuit) {
+                return $query->where('province_id', $jesuit->province_id)
+                            ->whereNull('region_id');
+            })
+            ->when($jesuit->region_id != null, function($query) use ($jesuit) {
+                return $query->where('region_id', $jesuit->region_id);
+            })
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -43,19 +49,14 @@ class CommissionController extends BaseController
      * Filter commissions by type.
      *
      * @param Request $request
-     * @param string $type
+     * @param string $code
      * @return \Illuminate\Http\JsonResponse
      */
-    public function byType(Request $request, $type)
+    public function byCode(Request $request, $code)
     {
         $validated = $request->validate([
             'per_page' => 'sometimes|integer|min:1|max:100',
         ]);
-
-        // Validate type parameter
-        if (!in_array($type, ['education', 'social', 'formation', 'pastoral'])) {
-            return $this->errorResponse('Invalid commission type. Must be one of: education, social, formation, pastoral');
-        }
 
         $perPage = $validated['per_page'] ?? 15;
         $user = $request->user();
@@ -67,11 +68,17 @@ class CommissionController extends BaseController
 
         $commissions = Commission::with([
                 'province:id,name,code',
-                'members.user:id,name,email,phone_number',
-                'head.user:id,name,email,phone_number'
+                'members',
+                'head'
             ])
-            ->where('province_id', $jesuit->province_id)
-            ->where('type', $type)
+            ->when($jesuit->region_id == null, function($query) use ($jesuit) {
+                return $query->where('province_id', $jesuit->province_id)
+                            ->whereNull('region_id');
+            })
+            ->when($jesuit->region_id != null, function($query) use ($jesuit) {
+                return $query->where('region_id', $jesuit->region_id);
+            })
+            ->where('code', $code)
             ->orderBy('name')
             ->paginate($perPage);
 

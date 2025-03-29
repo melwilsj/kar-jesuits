@@ -159,11 +159,12 @@ class InstitutionController extends BaseController
 
         $institutions = Institution::with([
                 'community:id,name,code',
-                'province:id,name,code',
-                'superiors.user:id,name,email,phone_number'
+                'directors'
             ])
-            ->where('province_id', $jesuit->province_id)
-            ->where('type', 'educational')
+            ->whereHas('community', function($query) use ($jesuit) {
+                $query->where('province_id', $jesuit->province_id);
+            })
+            ->whereIn('type', ['school', 'college', 'university', 'hostel', 'community_college', 'iti'])
             ->orderBy('name')
             ->paginate($perPage);
 
@@ -192,10 +193,11 @@ class InstitutionController extends BaseController
 
         $institutions = Institution::with([
                 'community:id,name,code',
-                'province:id,name,code',
-                'superiors.user:id,name,email,phone_number'
+                'directors'
             ])
-            ->where('province_id', $jesuit->province_id)
+            ->whereHas('community', function($query) use ($jesuit) {
+                $query->where('province_id', $jesuit->province_id);
+            })
             ->where('type', 'social_center')
             ->orderBy('name')
             ->paginate($perPage);
@@ -225,14 +227,41 @@ class InstitutionController extends BaseController
 
         $institutions = Institution::with([
                 'community:id,name,code',
-                'province:id,name,code',
-                'superiors.user:id,name,email,phone_number',
-                'diocese:id,name'
+                'directors'
             ])
-            ->where('province_id', $jesuit->province_id)
+            ->whereHas('community', function($query) use ($jesuit) {
+                $query->where('province_id', $jesuit->province_id);
+            })
             ->where('type', 'parish')
             ->orderBy('name')
             ->paginate($perPage);
+
+        return $this->successResponse($institutions);
+    }
+
+    /**
+     * Get all institutions regardless of type.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function all(Request $request)
+    {
+        $user = $request->user();
+        $jesuit = $user->jesuit;
+
+        if (!$jesuit) {
+            return $this->errorResponse('No Jesuit profile found', [], 404);
+        }
+
+        $institutions = Institution::with([
+                'community:id,name,code',
+                'directors'
+            ])
+            ->whereHas('community', function($query) use ($jesuit) {
+                $query->where('province_id', $jesuit->province_id);
+            })
+            ->get();
 
         return $this->successResponse($institutions);
     }
