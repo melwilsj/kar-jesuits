@@ -57,6 +57,31 @@ return [
             'throw' => false,
         ],
 
+        'cloudflare' => [
+            'driver' => 's3',
+            'key' => env('CLOUDFLARE_ACCESS_KEY_ID'),
+            'secret' => env('CLOUDFLARE_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('CLOUDFLARE_BUCKET'),
+            'endpoint' => env('CLOUDFLARE_ENDPOINT'),
+            'use_path_style_endpoint' => false,
+            'throw' => true,
+            'visibility' => 'private',
+        ],
+
+        'documents' => [
+            'driver' => 's3',
+            'key' => env('CLOUDFLARE_ACCESS_KEY_ID'),
+            'secret' => env('CLOUDFLARE_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('CLOUDFLARE_BUCKET'),
+            'endpoint' => env('CLOUDFLARE_ENDPOINT'),
+            'use_path_style_endpoint' => false,
+            'root' => 'documents',
+            'throw' => true,
+            'visibility' => 'private',
+        ],
+
     ],
 
     /*

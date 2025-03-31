@@ -30,7 +30,7 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('User Details')
+                Section::make('Special User Details')
                     ->schema([
                         TextInput::make('name')
                             ->required()
@@ -153,5 +153,11 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        // Only get users who do NOT have a jesuit record
+        return parent::getEloquentQuery()->whereDoesntHave('jesuit');
     }
 }

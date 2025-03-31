@@ -9,7 +9,7 @@ use Filament\Tables;
 class DocumentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'documents';
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'title';
 
     public function form(Forms\Form $form): Forms\Form
     {

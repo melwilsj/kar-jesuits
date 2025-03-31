@@ -5,11 +5,22 @@ namespace App\Filament\Resources\JesuitResource\RelationManagers;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\FormationStage;
 
 class FormationHistoryRelationManager extends RelationManager
 {
-    protected static string $relationship = 'jesuit.formationHistory';
-    protected static ?string $recordTitleAttribute = 'id';
+    protected static string $relationship = 'formationStages';
+    protected static ?string $recordTitleAttribute = 'stage.name';
+
+    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    {
+        try {
+            return parent::handleRecordCreation($data);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error creating formation history: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 
     public function form(Forms\Form $form): Forms\Form
     {
@@ -38,16 +49,22 @@ class FormationHistoryRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('stage.name')
+                    ->label('Formation Stage')
                     ->sortable()
                     ->searchable(),
+                    
                 Tables\Columns\TextColumn::make('current_year')
-                    ->visible(fn ($record) => $record->stage->hasYears()),
+                    // Only show when stage exists and has years
+                    ->visible(fn ($record) => $record && $record->stage && method_exists($record->stage, 'hasYears') && $record->stage->hasYears()),
+                    
                 Tables\Columns\TextColumn::make('start_date')
                     ->date()
                     ->sortable(),
+                    
                 Tables\Columns\TextColumn::make('end_date')
                     ->date()
                     ->sortable(),
+                    
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

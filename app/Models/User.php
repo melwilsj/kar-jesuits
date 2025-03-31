@@ -146,7 +146,7 @@ class User extends AuthenticatableModel
 
     public function isAdmin(): bool
     {
-        return $this->isProvinceAdmin() || $this->isRegionAdmin() || $this->isSuperAdmin();
+        return $this->isProvinceAdmin() || $this->isRegionAdmin() || $this->isSuperAdmin() || $this->hasAdministrativeRole();
     }
 
     public function isSuperAdmin(): bool
@@ -180,5 +180,19 @@ class User extends AuthenticatableModel
             $this->fcm_tokens = array_values($tokens); // Reindex array
             $this->save();
         }
+    }
+
+    public function hasAdministrativeRole(): bool
+    {
+        $cacheKey = "user_{$this->id}_admin_role";
+        
+        return cache()->remember($cacheKey, now()->addHours(24), function () {
+            return $this->isProvincial() || 
+                   $this->hasRole('socius') ||
+                   $this->jesuit?->activeRoles()
+                       ->whereHasMorph('assignable', [Province::class])
+                       ->whereIn('role_type_id', RoleType::whereIn('name', ['Provincial', 'Socius'])->pluck('id'))
+                       ->exists() ?? false;
+        });
     }
 }
