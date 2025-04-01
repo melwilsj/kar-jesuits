@@ -14,29 +14,33 @@ class Institution extends BaseModel
 
     protected $fillable = [
         'name',
+        'code',
         'community_id',
         'type',
-        'description',
-        'contact_details',
-        'student_demographics',
-        'staff_demographics',
-        'beneficiaries',
         'diocese',
         'taluk',
         'district',
         'state',
         'address',
-        'is_active'
+        'is_active',
+        'description',
+        'contact_details',
+        'student_demographics',
+        'staff_demographics',
+        'beneficiaries',
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'contact_details' => 'array',
         'student_demographics' => 'array',
         'staff_demographics' => 'array',
         'beneficiaries' => 'array',
-        'is_active' => 'boolean'
     ];
 
+    /**
+     * Get the community this institution belongs to.
+     */
     public function community(): BelongsTo
     {
         return $this->belongsTo(Community::class);

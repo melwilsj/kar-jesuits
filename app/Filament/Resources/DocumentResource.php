@@ -17,6 +17,8 @@ class DocumentResource extends Resource
 {
     protected static ?string $model = Document::class;
 
+    protected static ?string $navigationGroup = 'Member Management';
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form

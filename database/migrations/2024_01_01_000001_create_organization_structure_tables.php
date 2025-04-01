@@ -49,7 +49,7 @@ return new class extends Migration
             $table->foreignId('assistancy_id')->nullable()->constrained();
             $table->foreignId('parent_community_id')->nullable()
                 ->references('id')->on('communities');
-            $table->enum('superior_type', ['Superior', 'Rector', 'Coordinator']);
+            $table->enum('superior_type', ['Superior', 'Rector', 'Coordinator', 'Vice-Superior']);
             $table->string('address');
             $table->string('diocese')->nullable();
             $table->string('taluk')->nullable();

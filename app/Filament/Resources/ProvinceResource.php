@@ -12,7 +12,7 @@ class ProvinceResource extends Resource
 {
     protected static ?string $model = Province::class;
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'System Management';
 
     public static function form(Forms\Form $form): Forms\Form
     {
