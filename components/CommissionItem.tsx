@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 
 // Add this to your types/api.ts file if not already there
 export interface Commission {
@@ -19,6 +20,7 @@ interface CommissionItemProps {
 }
 
 export default function CommissionItem({ commission, onPress }: CommissionItemProps) {
+  const colorScheme = useColorScheme();
   const getIconByType = () => {
     switch (commission.type) {
       case 'education':
@@ -35,28 +37,28 @@ export default function CommissionItem({ commission, onPress }: CommissionItemPr
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.iconContainer}>
-        <MaterialIcons name={getIconByType()} size={24} color={Colors.primary} />
+    <TouchableOpacity style={[styles.container, { backgroundColor: Colors[`${colorScheme}`].background }]} onPress={onPress}>
+      <View style={[styles.iconContainer, { backgroundColor: Colors[`${colorScheme}`].background }]}>
+        <MaterialIcons name={getIconByType()} size={24} color={Colors[`${colorScheme}`].icon} />
       </View>
       <View style={styles.content}>
-        <Text style={styles.name}>{commission.name}</Text>
+        <Text style={[styles.name, { color: Colors[`${colorScheme}`].text }]}>{commission.name}</Text>
         {commission.coordinator && (
           <View style={styles.details}>
             <View style={styles.detailItem}>
-              <MaterialIcons name="person" size={14} color={Colors.gray[500]} />
+              <MaterialIcons name="person" size={14} color={Colors[`${colorScheme}`].icon} />
               <Text style={styles.detailText}>Coordinator: {commission.coordinator}</Text>
             </View>
           </View>
         )}
         {commission.members && (
           <View style={styles.detailItem}>
-            <MaterialIcons name="groups" size={14} color={Colors.gray[500]} />
+            <MaterialIcons name="groups" size={14} color={Colors[`${colorScheme}`].icon} />
             <Text style={styles.detailText}>{commission.members} members</Text>
           </View>
         )}
       </View>
-      <MaterialIcons name="chevron-right" size={20} color={Colors.gray[400]} />
+      <MaterialIcons name="chevron-right" size={20} color={Colors[`${colorScheme}`].icon} />
     </TouchableOpacity>
   );
 }
@@ -65,7 +67,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
     borderRadius: 8,
     marginBottom: 10,
     padding: 12,
@@ -79,7 +80,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.text,
   },
   details: {
     flexDirection: 'row',
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: Colors.gray[600],
+    color: Color.gray[500],
     marginLeft: 4,
   },
 }); 

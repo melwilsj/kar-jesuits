@@ -2,15 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useEvent } from '@/hooks/useDataUtils';
 
 export default function EventScreen() {
   const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const { event, loading } = useEvent(Number(id));
   
   // Helper function to format date
@@ -41,7 +40,7 @@ export default function EventScreen() {
     return (
       <ScreenContainer>
         <View style={[styles.container, styles.centerContent]}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
         </View>
       </ScreenContainer>
     );
@@ -51,7 +50,7 @@ export default function EventScreen() {
     return (
       <ScreenContainer>
         <View style={[styles.container, styles.centerContent]}>
-          <Text style={{ color: isDark ? Colors.gray[300] : Colors.gray[700] }}>
+          <Text style={{ color: Colors[`${colorScheme}`].textSecondary }}>
             Event not found
           </Text>
         </View>
@@ -84,13 +83,13 @@ export default function EventScreen() {
         {/* Header Section */}
         <View style={[
           styles.card,
-          { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+          { backgroundColor: Colors[`${colorScheme}`].background }
         ]}>
           <View style={styles.eventTypeChip}>
             <MaterialIcons 
               name={getEventTypeIcon()} 
               size={16} 
-              color={Colors.white} 
+              color={Colors[`${colorScheme}`].primary} 
             />
             <Text style={styles.eventTypeText}>
               {event.event_type.charAt(0).toUpperCase() + event.event_type.slice(1)}
@@ -99,7 +98,7 @@ export default function EventScreen() {
           
           <Text style={[
             styles.title,
-            { color: isDark ? Colors.gray[100] : Colors.text }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             {event.title}
           </Text>
@@ -108,25 +107,25 @@ export default function EventScreen() {
         {/* Details Card */}
         <View style={[
           styles.card,
-          { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+          { backgroundColor: Colors[`${colorScheme}`].background }
         ]}>
           <View style={styles.infoRow}>
             <MaterialIcons 
               name="description" 
               size={20} 
-              color={Colors.primary} 
+              color={Colors[`${colorScheme}`].primary} 
               style={styles.infoIcon}
             />
             <View style={styles.infoContent}>
               <Text style={[
                 styles.infoLabel,
-                { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 Description
               </Text>
               <Text style={[
                 styles.infoValue,
-                { color: isDark ? Colors.gray[200] : Colors.text }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 {event.description || 'No description available'}
               </Text>
@@ -137,19 +136,19 @@ export default function EventScreen() {
             <MaterialIcons 
               name="date-range" 
               size={20} 
-              color={Colors.primary} 
+              color={Colors[`${colorScheme}`].primary} 
               style={styles.infoIcon}
             />
             <View style={styles.infoContent}>
               <Text style={[
                 styles.infoLabel,
-                { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 Date
               </Text>
               <Text style={[
                 styles.infoValue,
-                { color: isDark ? Colors.gray[200] : Colors.text }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 {formatDate(event.start_datetime)}
               </Text>
@@ -160,19 +159,19 @@ export default function EventScreen() {
             <MaterialIcons 
               name="access-time" 
               size={20} 
-              color={Colors.primary} 
+              color={Colors[`${colorScheme}`].primary} 
               style={styles.infoIcon}
             />
             <View style={styles.infoContent}>
               <Text style={[
                 styles.infoLabel,
-                { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 Time
               </Text>
               <Text style={[
                 styles.infoValue,
-                { color: isDark ? Colors.gray[200] : Colors.text }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 {formatTime(event.start_datetime)} - {formatTime(event.end_datetime)}
               </Text>
@@ -184,19 +183,19 @@ export default function EventScreen() {
               <MaterialIcons 
                 name="location-on" 
                 size={20} 
-                color={Colors.primary} 
+                color={Colors[`${colorScheme}`].primary} 
                 style={styles.infoIcon}
               />
               <View style={styles.infoContent}>
                 <Text style={[
                   styles.infoLabel,
-                  { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Venue
                 </Text>
                 <Text style={[
                   styles.infoValue,
-                  { color: isDark ? Colors.gray[200] : Colors.text }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   {event.venue}
                 </Text>
@@ -209,19 +208,19 @@ export default function EventScreen() {
               <MaterialIcons 
                 name="home" 
                 size={20} 
-                color={Colors.primary} 
+                color={Colors[`${colorScheme}`].primary} 
                 style={styles.infoIcon}
               />
               <View style={styles.infoContent}>
                 <Text style={[
                   styles.infoLabel,
-                  { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Community
                 </Text>
                 <Text style={[
                   styles.infoValue,
-                  { color: isDark ? Colors.gray[200] : Colors.text }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   {event.community}
                 </Text>
@@ -258,7 +257,7 @@ const styles = StyleSheet.create({
   eventTypeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -266,7 +265,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   eventTypeText: {
-    color: Colors.white,
+    color: Color.white,
     fontSize: 12,
     fontWeight: '500',
     marginLeft: 4,

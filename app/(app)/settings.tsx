@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useSettings';
 import { Stack } from 'expo-router';
 import { useSettingsStore } from '@/hooks/useSettings';
@@ -13,7 +13,6 @@ import { DataStorage } from '@/services/storage';
 
 export default function Settings() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const { syncData } = useDataSync();
   const [syncTime, setSyncTime] = useState<number | null>(null);
   const [cacheSize, setCacheSize] = useState('0 MB');
@@ -115,24 +114,24 @@ export default function Settings() {
       <ScrollView style={styles.scrollView}>
         {/* Appearance Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? Colors.gray[200] : Colors.gray[800] }]}>
+          <Text style={[styles.sectionTitle, { color: Colors[`${colorScheme}`].text }]}>
             Appearance
           </Text>
           
           {/* Theme Setting */}
           <View style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="dark-mode" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Dark Mode
               </Text>
@@ -146,24 +145,24 @@ export default function Settings() {
                   setThemeMode('light');
                 }
               }}
-              trackColor={{ false: Colors.gray[300], true: Colors.primary }}
+              trackColor={{ false: Colors[`${colorScheme}`].gray300, true: Colors[`${colorScheme}`].primary }}
             />
           </View>
           
           {/* Font Size Setting */}
           <View style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="format-size" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Font Size
               </Text>
@@ -173,14 +172,14 @@ export default function Settings() {
                 style={[
                   styles.fontSizeOption,
                   fontSize === 'small' && styles.selectedFontSize,
-                  fontSize === 'small' && { backgroundColor: Colors.primary }
+                  fontSize === 'small' && { backgroundColor: Colors[`${colorScheme}`].primary }
                 ]}
                 onPress={() => setFontSize('small')}
               >
                 <Text style={[
                   styles.fontSizeText,
                   { fontSize: 12 },
-                  fontSize === 'small' && { color: Colors.white }
+                  fontSize === 'small' && { color: Colors[`${colorScheme}`].primary }
                 ]}>
                   S
                 </Text>
@@ -189,14 +188,14 @@ export default function Settings() {
                 style={[
                   styles.fontSizeOption,
                   fontSize === 'medium' && styles.selectedFontSize,
-                  fontSize === 'medium' && { backgroundColor: Colors.primary }
+                  fontSize === 'medium' && { backgroundColor: Colors[`${colorScheme}`].primary }
                 ]}
                 onPress={() => setFontSize('medium')}
               >
                 <Text style={[
                   styles.fontSizeText,
                   { fontSize: 15 },
-                  fontSize === 'medium' && { color: Colors.white }
+                  fontSize === 'medium' && { color: Colors[`${colorScheme}`].primary }
                 ]}>
                   M
                 </Text>
@@ -205,14 +204,14 @@ export default function Settings() {
                 style={[
                   styles.fontSizeOption,
                   fontSize === 'large' && styles.selectedFontSize,
-                  fontSize === 'large' && { backgroundColor: Colors.primary }
+                  fontSize === 'large' && { backgroundColor: Colors[`${colorScheme}`].primary }
                 ]}
                 onPress={() => setFontSize('large')}
               >
                 <Text style={[
                   styles.fontSizeText,
                   { fontSize: 18 },
-                  fontSize === 'large' && { color: Colors.white }
+                  fontSize === 'large' && { color: Colors[`${colorScheme}`].primary }
                 ]}>
                   L
                 </Text>
@@ -223,24 +222,24 @@ export default function Settings() {
         
         {/* Data Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? Colors.gray[200] : Colors.gray[800] }]}>
+          <Text style={[styles.sectionTitle, { color: Colors[`${colorScheme}`].text }]}>
             Data & Sync
           </Text>
           
           {/* Sync Frequency */}
           <View style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="sync" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Sync Frequency
               </Text>
@@ -249,13 +248,13 @@ export default function Settings() {
               <TouchableOpacity
                 style={[
                   styles.syncOption,
-                  syncFrequency === 'manual' && { backgroundColor: Colors.primary }
+                  syncFrequency === 'manual' && { backgroundColor: Colors[`${colorScheme}`].primary }
                 ]}
                 onPress={() => setSyncFrequency('manual')}
               >
                 <Text style={[
                   styles.syncOptionText,
-                  syncFrequency === 'manual' && { color: Colors.white }
+                  syncFrequency === 'manual' && { color: Colors[`${colorScheme}`].primary }
                 ]}>
                   Manual
                 </Text>
@@ -263,13 +262,13 @@ export default function Settings() {
               <TouchableOpacity
                 style={[
                   styles.syncOption,
-                  syncFrequency === 'daily' && { backgroundColor: Colors.primary }
+                  syncFrequency === 'daily' && { backgroundColor: Colors[`${colorScheme}`].primary }
                 ]}
                 onPress={() => setSyncFrequency('daily')}
               >
                 <Text style={[
                   styles.syncOptionText,
-                  syncFrequency === 'daily' && { color: Colors.white }
+                  syncFrequency === 'daily' && { color: Colors[`${colorScheme}`].primary }
                 ]}>
                   Daily
                 </Text>
@@ -277,13 +276,13 @@ export default function Settings() {
               <TouchableOpacity
                 style={[
                   styles.syncOption,
-                  syncFrequency === 'always' && { backgroundColor: Colors.primary }
+                  syncFrequency === 'always' && { backgroundColor: Colors[`${colorScheme}`].primary }
                 ]}
                 onPress={() => setSyncFrequency('always')}
               >
                 <Text style={[
                   styles.syncOptionText,
-                  syncFrequency === 'always' && { color: Colors.white }
+                  syncFrequency === 'always' && { color: Colors[`${colorScheme}`].primary }
                 ]}>
                   Always
                 </Text>
@@ -295,7 +294,7 @@ export default function Settings() {
           <TouchableOpacity 
             style={[
               styles.settingItem, 
-              { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+              { backgroundColor: Colors[`${colorScheme}`].background }
             ]}
             onPress={handleSyncNow}
           >
@@ -303,12 +302,12 @@ export default function Settings() {
               <MaterialIcons 
                 name="sync" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <View>
                 <Text style={[
                   styles.settingText, 
-                  { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   Sync Data Now
                 </Text>
@@ -320,7 +319,7 @@ export default function Settings() {
             <MaterialIcons 
               name="chevron-right" 
               size={22} 
-              color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+              color={Colors[`${colorScheme}`].icon} 
             />
           </TouchableOpacity>
           
@@ -328,7 +327,7 @@ export default function Settings() {
           <TouchableOpacity 
             style={[
               styles.settingItem, 
-              { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+              { backgroundColor: Colors[`${colorScheme}`].background }
             ]}
             onPress={clearCache}
           >
@@ -336,12 +335,12 @@ export default function Settings() {
               <MaterialIcons 
                 name="cleaning-services" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <View>
                 <Text style={[
                   styles.settingText, 
-                  { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   Clear Cache
                 </Text>
@@ -353,30 +352,30 @@ export default function Settings() {
             <MaterialIcons 
               name="chevron-right" 
               size={22} 
-              color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+              color={Colors[`${colorScheme}`].icon} 
             />
           </TouchableOpacity>
         </View>
         
         {/* Notifications Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? Colors.gray[200] : Colors.gray[800] }]}>
+          <Text style={[styles.sectionTitle, { color: Colors[`${colorScheme}`].text }]}>
             Notifications
           </Text>
           
           <View style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="notifications" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Enable Notifications
               </Text>
@@ -384,30 +383,30 @@ export default function Settings() {
             <Switch
               value={showNotifications}
               onValueChange={setShowNotifications}
-              trackColor={{ false: Colors.gray[300], true: Colors.primary }}
+              trackColor={{ false: Colors[`${colorScheme}`].gray300, true: Colors[`${colorScheme}`].primary }}
             />
           </View>
         </View>
         
         {/* About Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? Colors.gray[200] : Colors.gray[800] }]}>
+          <Text style={[styles.sectionTitle, { color: Colors[`${colorScheme}`].text }]}>
             About
           </Text>
           
           <View style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="info" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 App Version
               </Text>
@@ -417,17 +416,17 @@ export default function Settings() {
           
           <TouchableOpacity style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="description" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Terms of Service
               </Text>
@@ -435,23 +434,23 @@ export default function Settings() {
             <MaterialIcons 
               name="chevron-right" 
               size={22} 
-              color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+              color={Colors[`${colorScheme}`].icon} 
             />
           </TouchableOpacity>
           
           <TouchableOpacity style={[
             styles.settingItem, 
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <View style={styles.settingContent}>
               <MaterialIcons 
                 name="privacy-tip" 
                 size={22} 
-                color={isDark ? Colors.gray[200] : Colors.gray[700]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <Text style={[
                 styles.settingText, 
-                { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Privacy Policy
               </Text>
@@ -459,7 +458,7 @@ export default function Settings() {
             <MaterialIcons 
               name="chevron-right" 
               size={22} 
-              color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+              color={Colors[`${colorScheme}`].icon} 
             />
           </TouchableOpacity>
         </View>
@@ -500,13 +499,13 @@ const styles = StyleSheet.create({
   },
   settingSubtext: {
     fontSize: 12,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginLeft: 12,
     marginTop: 2,
   },
   versionText: {
     fontSize: 14,
-    color: Colors.gray[500],
+    color: Color.gray[500],
   },
   fontSizeOptions: {
     flexDirection: 'row',
@@ -517,16 +516,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 16,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     marginLeft: 8,
   },
   selectedFontSize: {
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Color.primary,
   },
   fontSizeText: {
     fontWeight: '600',
-    color: Colors.gray[700],
+    color: Color.gray[700],
   },
   syncOptions: {
     flexDirection: 'row',
@@ -535,11 +534,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     marginLeft: 8,
   },
   syncOptionText: {
     fontSize: 12,
-    color: Colors.gray[700],
+    color: Color.gray[700],
   },
 });

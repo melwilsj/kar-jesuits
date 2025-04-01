@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useSettings';
 import { Stack, router } from 'expo-router';
 import ScaledText from '@/components/ScaledText';
@@ -21,7 +21,6 @@ interface Document {
 
 export default function Documents() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -108,14 +107,14 @@ export default function Documents() {
         <View style={styles.header}>
           <ScaledText style={[
             styles.title, 
-            { color: isDark ? Colors.white : Colors.gray[800] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             Document Vault
           </ScaledText>
           <TouchableOpacity
             style={[
               styles.addButton,
-              { backgroundColor: Colors.primary }
+              { backgroundColor: Colors[`${colorScheme}`].primary }
             ]}
             onPress={pickDocument}
           >
@@ -128,8 +127,8 @@ export default function Documents() {
         
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-            <ScaledText style={{ marginTop: 12, color: isDark ? Colors.gray[300] : Colors.gray[600] }}>
+            <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
+            <ScaledText style={{ marginTop: 12, color: Colors[`${colorScheme}`].gray400}}>
               Loading documents...
             </ScaledText>
           </View>
@@ -138,17 +137,17 @@ export default function Documents() {
             <MaterialIcons 
               name="folder-open" 
               size={64} 
-              color={isDark ? Colors.gray[600] : Colors.gray[400]} 
+              color={Colors[`${colorScheme}`].gray400} 
             />
             <ScaledText style={[
               styles.emptyText,
-              { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+              { color: Colors[`${colorScheme}`].gray600 }
             ]}>
               No documents yet
             </ScaledText>
             <ScaledText style={[
               styles.emptySubtext,
-              { color: isDark ? Colors.gray[500] : Colors.gray[500] }
+              { color: Colors[`${colorScheme}`].gray500 }
             ]}>
               Add your first document by tapping the button above
             </ScaledText>
@@ -160,7 +159,7 @@ export default function Documents() {
                 key={doc.id}
                 style={[
                   styles.documentItem,
-                  { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+                  { backgroundColor: Colors[`${colorScheme}`].gray800 }
                 ]}
                 onPress={() => openDocument(doc)}
               >
@@ -168,19 +167,19 @@ export default function Documents() {
                   <MaterialIcons
                     name={doc.type.includes('pdf') ? 'picture-as-pdf' : 'insert-drive-file'}
                     size={24}
-                    color={Colors.primary}
+                    color={Colors[`${colorScheme}`].primary}
                   />
                 </View>
                 <View style={styles.documentInfo}>
                   <ScaledText style={[
                     styles.documentName, 
-                    { color: isDark ? Colors.white : Colors.gray[800] }
+                    { color: Colors[`${colorScheme}`].primary }
                   ]} numberOfLines={1}>
                     {doc.name}
                   </ScaledText>
                   <ScaledText style={[
                     styles.documentMeta,
-                    { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                    { color: Colors[`${colorScheme}`].gray400 }
                   ]}>
                     {formatFileSize(doc.size)} • {formatDate(doc.createdAt)}
                   </ScaledText>
@@ -189,7 +188,7 @@ export default function Documents() {
                   style={styles.deleteButton}
                   onPress={() => deleteDocument(doc.id)}
                 >
-                  <MaterialIcons name="delete" size={22} color={Colors.gray[500]} />
+                  <MaterialIcons name="delete" size={22} color={Colors[`${colorScheme}`].gray500} />
                 </TouchableOpacity>
               </TouchableOpacity>
             ))}
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

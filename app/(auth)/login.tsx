@@ -6,7 +6,7 @@ import GoogleLogin from '@/components/auth/GoogleLogin';
 import { FirebaseService } from '@/services/firebase';
 import { authAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingProgress from '@/components/ui/LoadingProgress';
 import { useDataSync } from '@/hooks/useDataSync';
@@ -98,21 +98,21 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
     padding: 16,
     justifyContent: 'center',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Color.text,
     textAlign: 'center',
     marginTop: 48,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: Color.border,
   },
   dividerText: {
-    color: Colors.gray[500],
+    color: Color.gray[500],
     paddingHorizontal: 16,
   },
 }); 

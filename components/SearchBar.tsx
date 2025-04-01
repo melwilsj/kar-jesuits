@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import { StyleSheet, TextInput, View, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 
 interface SearchBarProps {
   onFocus?: () => void;
@@ -16,28 +16,27 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>(({
   value
 }, ref) => {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   return (
     <View 
       style={[
         styles.searchBar,
-        { backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100] }
+        { backgroundColor: Colors[`${colorScheme}`].background }
       ]}
     >
       <MaterialIcons 
         name="search" 
         size={20} 
-        color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+        color={Colors[`${colorScheme}`].icon    } 
       />
       <TextInput
         ref={ref}
         style={[
           styles.input,
-          { color: isDark ? Colors.gray[100] : Colors.gray[900] }
+          { color: Colors[`${colorScheme}`].text }
         ]}
         placeholder="Search jesuits, communities..."
-        placeholderTextColor={isDark ? Colors.gray[400] : Colors.gray[500]}
+        placeholderTextColor={Colors[`${colorScheme}`].textSecondary}
         onFocus={onFocus}
         onChangeText={onChangeText}
         value={value}
@@ -53,7 +52,7 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>(({
           <MaterialIcons
             name="close"
             size={20}
-            color={isDark ? Colors.gray[400] : Colors.gray[500]}
+            color={Colors[`${colorScheme}`].textSecondary}
           />
         </TouchableOpacity>
       )}

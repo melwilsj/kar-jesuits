@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Colors from '@/constants/Colors';
+import { Color } from '@/constants/Colors';
 
 interface LoadingProgressProps {
   message?: string;
@@ -31,22 +31,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
   },
   progressContainer: {
     width: 300,
     height: 4,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 2,
     overflow: 'hidden',
     marginBottom: 16,
   },
   progressBar: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
   },
   message: {
-    color: Colors.text,
+    color: Color.text,
     fontSize: 16,
     marginTop: 8,
   },

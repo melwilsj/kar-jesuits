@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useDataSync } from '@/hooks/useDataSync';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import { authAPI } from '@/services/api';
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ const isToday = (dateString: string) => {
 };
 
 export default function Home() {
+  const colorScheme = useColorScheme();
   const { user, currentJesuit } = useAuth();
   const { events = [], isLoading } = useDataSync();
   const { logout } = authAPI;
@@ -58,7 +60,7 @@ export default function Home() {
             style={styles.profileButton}
             onPress={() => router.push('/(app)/profile/me')}
           >
-            <MaterialIcons name="person" size={20} color={Colors.primary} />
+            <MaterialIcons name="person" size={20} color={Colors[`${colorScheme}`].primary} />
             <Text style={styles.profileButtonText}>View Profile</Text>
           </TouchableOpacity>
         </View>
@@ -68,7 +70,7 @@ export default function Home() {
           <Text style={styles.sectionTitle}>Today's Events</Text>
           
           {isLoading ? (
-            <ActivityIndicator size="small" color={Colors.primary} style={styles.loader} />
+            <ActivityIndicator size="small" color={Colors[`${colorScheme}`].primary} style={styles.loader} />
           ) : todaysEvents.length > 0 ? (
             todaysEvents.map(event => (
               <EventCard key={event.id} event={event} />
@@ -87,12 +89,12 @@ export default function Home() {
               onPress={() => router.push('/(app)/events')}
             >
               <Text style={styles.viewAllText}>View All</Text>
-              <MaterialIcons name="chevron-right" size={16} color={Colors.primary} />
+              <MaterialIcons name="chevron-right" size={16} color={Colors[`${colorScheme}`].primary} />
             </TouchableOpacity>
           </View>
           
           {isLoading ? (
-            <ActivityIndicator size="small" color={Colors.primary} style={styles.loader} />
+            <ActivityIndicator size="small" color={Colors[`${colorScheme}`].primary} style={styles.loader} />
           ) : upcomingEvents.length > 0 ? (
             <ScrollView 
               horizontal 
@@ -116,7 +118,7 @@ export default function Home() {
             style={styles.navButton}
             onPress={() => router.push('/(app)/filter')}
           >
-            <MaterialIcons name="filter-list" size={24} color={Colors.primary} />
+            <MaterialIcons name="filter-list" size={24} color={Colors[`${colorScheme}`].primary} />
             <Text style={styles.navButtonText}>Search & Filter</Text>
           </TouchableOpacity>
           
@@ -124,7 +126,7 @@ export default function Home() {
             style={styles.navButton}
             onPress={() => router.push('/(app)/filter/communities')}
           >
-            <MaterialIcons name="home" size={24} color={Colors.primary} />
+            <MaterialIcons name="home" size={24} color={Colors[`${colorScheme}`].primary} />
             <Text style={styles.navButtonText}>Communities</Text>
           </TouchableOpacity>
           
@@ -132,7 +134,7 @@ export default function Home() {
             style={styles.navButton}
             onPress={() => router.push('/(app)/filter/institutions')}
           >
-            <MaterialIcons name="business" size={24} color={Colors.primary} />
+            <MaterialIcons name="business" size={24} color={Colors[`${colorScheme}`].primary} />
             <Text style={styles.navButtonText}>Institutions</Text>
           </TouchableOpacity>
         </View>
@@ -144,7 +146,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
   },
   headerSection: {
     padding: 16,
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
   welcome: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Color.text,
     flex: 1,
   },
   profileButton: {
@@ -165,7 +167,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   profileButtonText: {
-    color: Colors.primary,
+    color: Color.primary,
     marginLeft: 4,
     fontWeight: '500',
   },
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Color.text,
     marginBottom: 12,
   },
   viewAllButton: {
@@ -190,14 +192,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   viewAllText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontSize: 14,
   },
   loader: {
     marginVertical: 20,
   },
   noEventsText: {
-    color: Colors.gray[500],
+    color: Color.gray[500],
     textAlign: 'center',
     marginVertical: 20,
     fontStyle: 'italic',
@@ -215,7 +217,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   navButton: {
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   navButtonText: {
-    color: Colors.text,
+    color: Color.text,
     fontSize: 14,
     fontWeight: '500',
     marginTop: 8,
@@ -242,7 +244,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   logoutText: {
-    color: Colors.error,
+    color: Color.error,
     fontSize: 16,
     fontWeight: '500',
     marginLeft: 6,

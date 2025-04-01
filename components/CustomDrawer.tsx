@@ -8,14 +8,13 @@ import {
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { router } from 'expo-router';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function CustomDrawer(props: DrawerContentComponentProps) {
   const { currentJesuit, logout } = useAuth();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const defaultImage = 'https://placehold.co/600x400.png';
 
   // Define which routes should be visible in the drawer
@@ -69,7 +68,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
       {...filteredProps}
       style={[
         styles.container,
-        { backgroundColor: isDark ? Colors.gray[900] : Colors.background }
+        { backgroundColor: Colors[`${colorScheme}`].background }
       ]}
     >
       <TouchableOpacity 
@@ -83,13 +82,13 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
         <View style={styles.profileInfo}>
           <Text style={[
             styles.name, 
-            { color: isDark ? Colors.gray[100] : Colors.text }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             {currentJesuit?.name}
           </Text>
           <Text style={[
             styles.community,
-            { color: isDark ? Colors.gray[300] : Colors.gray[600] }
+            { color: Colors[`${colorScheme}`].textSecondary }
           ]}>
             {currentJesuit?.current_community}
           </Text>
@@ -106,11 +105,11 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
         <MaterialIcons 
           name="logout" 
           size={24} 
-          color={isDark ? Colors.gray[100] : Colors.gray[900]} 
+          color={Colors[`${colorScheme}`].icon} 
         />
         <Text style={[
           styles.logoutText,
-          { color: isDark ? Colors.gray[100] : Colors.gray[900] }
+          { color: Colors[`${colorScheme}`].text }
         ]}>
           Logout
         </Text>
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
   profileSection: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    borderBottomColor: Color.gray[200],
     marginBottom: 8,
     alignItems: 'center',
   },
@@ -155,7 +154,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 'auto',
     borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
+    borderTopColor: Color.gray[200],
   },
   logoutText: {
     marginLeft: 32,

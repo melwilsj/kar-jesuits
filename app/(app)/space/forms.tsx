@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useSettings';
 import { Stack } from 'expo-router';
 import ScaledText from '@/components/ScaledText';
@@ -31,7 +31,6 @@ interface FormState {
 
 export default function Forms() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const { currentJesuit } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formState, setFormState] = useState<FormState>({
@@ -118,13 +117,13 @@ export default function Forms() {
           <View style={styles.header}>
             <ScaledText style={[
               styles.title, 
-              { color: isDark ? Colors.white : Colors.gray[800] }
+              { color: Colors[`${colorScheme}`].text }
             ]}>
               Submit a Form
             </ScaledText>
             <ScaledText style={[
               styles.subtitle,
-              { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+              { color: Colors[`${colorScheme}`].textSecondary }
             ]}>
               Fill out the details to send to administrators
             </ScaledText>
@@ -134,7 +133,7 @@ export default function Forms() {
             <View style={styles.formSection}>
               <ScaledText style={[
                 styles.sectionTitle,
-                { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 Form Type
               </ScaledText>
@@ -146,9 +145,7 @@ export default function Forms() {
                       styles.typeButton,
                       formState.type === type.id && styles.selectedTypeButton,
                       {
-                        backgroundColor: isDark 
-                          ? (formState.type === type.id ? Colors.primary : Colors.gray[800]) 
-                          : (formState.type === type.id ? Colors.primary + '20' : Colors.gray[100])
+                        backgroundColor: formState.type === type.id ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].background
                       }
                     ]}
                     onPress={() => setFormState({...formState, type: type.id as FormType})}
@@ -157,16 +154,16 @@ export default function Forms() {
                       name={type.icon as any}
                       size={20}
                       color={formState.type === type.id 
-                        ? (isDark ? Colors.white : Colors.primary) 
-                        : (isDark ? Colors.gray[400] : Colors.gray[600])}
+                        ? Colors[`${colorScheme}`].primary 
+                        : Colors[`${colorScheme}`].primary }
                     />
                     <ScaledText style={[
                       styles.typeButtonText,
                       formState.type === type.id && styles.selectedTypeButtonText,
                       {
                         color: formState.type === type.id 
-                          ? (isDark ? Colors.white : Colors.primary) 
-                          : (isDark ? Colors.gray[400] : Colors.gray[600])
+                          ? Colors[`${colorScheme}`].primary 
+                          : Colors[`${colorScheme}`].textSecondary
                       }
                     ]}>
                       {type.label}
@@ -179,7 +176,7 @@ export default function Forms() {
             <View style={styles.formSection}>
               <ScaledText style={[
                 styles.sectionTitle,
-                { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 Subject
               </ScaledText>
@@ -187,13 +184,13 @@ export default function Forms() {
                 style={[
                   styles.textInput,
                   { 
-                    backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100],
-                    color: isDark ? Colors.white : Colors.gray[800],
-                    borderColor: isDark ? Colors.gray[700] : Colors.gray[300]
+                    backgroundColor: Colors[`${colorScheme}`].background,
+                    color: Colors[`${colorScheme}`].text,
+                    borderColor: Colors[`${colorScheme}`].border
                   }
                 ]}
                 placeholder="Enter subject"
-                placeholderTextColor={isDark ? Colors.gray[500] : Colors.gray[400]}
+                placeholderTextColor={Colors[`${colorScheme}`].textSecondary}
                 value={formState.subject}
                 onChangeText={(text) => setFormState({...formState, subject: text})}
               />
@@ -202,7 +199,7 @@ export default function Forms() {
             <View style={styles.formSection}>
               <ScaledText style={[
                 styles.sectionTitle,
-                { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 Details
               </ScaledText>
@@ -211,13 +208,13 @@ export default function Forms() {
                   styles.textInput,
                   styles.multilineInput,
                   { 
-                    backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100],
-                    color: isDark ? Colors.white : Colors.gray[800],
-                    borderColor: isDark ? Colors.gray[700] : Colors.gray[300]
+                    backgroundColor: Colors[`${colorScheme}`].background,
+                    color: Colors[`${colorScheme}`].text,
+                    borderColor: Colors[`${colorScheme}`].border
                   }
                 ]}
                 placeholder="Describe your request in detail"
-                placeholderTextColor={isDark ? Colors.gray[500] : Colors.gray[400]}
+                placeholderTextColor={Colors[`${colorScheme}`].textSecondary}
                 multiline
                 numberOfLines={6}
                 textAlignVertical="top"
@@ -235,11 +232,11 @@ export default function Forms() {
                   styles.checkbox,
                   {
                     backgroundColor: formState.urgent 
-                      ? Colors.primary 
+                      ? Colors[`${colorScheme}`].primary 
                       : 'transparent',
                     borderColor: formState.urgent 
-                      ? Colors.primary 
-                      : (isDark ? Colors.gray[500] : Colors.gray[400])
+                      ? Colors[`${colorScheme}`].primary 
+                      : Colors[`${colorScheme}`].textSecondary
                   }
                 ]}>
                   {formState.urgent && (
@@ -248,7 +245,7 @@ export default function Forms() {
                 </View>
                 <ScaledText style={[
                   styles.checkboxLabel,
-                  { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Mark as urgent
                 </ScaledText>
@@ -327,7 +324,7 @@ const styles = StyleSheet.create({
   },
   selectedTypeButton: {
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Color.primary,
   },
   typeButtonText: {
     marginLeft: 6,
@@ -364,7 +361,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',

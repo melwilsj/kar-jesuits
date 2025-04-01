@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import PhoneInput, { ICountry, isValidPhoneNumber } from 'react-native-international-phone-number';
-import Colors from '@/constants/Colors';
+import { Color } from '@/constants/Colors';
 import ErrorMessage from '../ui/ErrorMessage';
 import LoadingProgress from '../ui/LoadingProgress';
 
@@ -80,9 +80,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Color.border,
     borderRadius: 8,
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
   },
   flagContainer: {
     borderTopLeftRadius: 8,
@@ -91,27 +91,27 @@ const styles = StyleSheet.create({
   textContainer: {
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
   },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: Colors.gray[700],
+    color: Color.gray[700],
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Color.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
     fontSize: 16,
   },
   inputError: {
-    borderColor: Colors.error,
+    borderColor: Color.error,
   },
   button: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: Colors.background,
+    color: Color.background,
     fontWeight: '600',
     fontSize: 16,
   },

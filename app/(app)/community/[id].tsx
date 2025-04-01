@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import { useCommunity } from '@/hooks/useDataUtils';
 import { Jesuit } from '@/types/api';
 import ScreenContainer from '@/components/ScreenContainer';
@@ -10,13 +10,12 @@ import ScreenContainer from '@/components/ScreenContainer';
 export default function CommunityScreen() {
   const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const { community, communityMembers, loading } = useCommunity(Number(id));
   
   if (loading) {
     return (
       <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
       </View>
     );
   }
@@ -24,7 +23,7 @@ export default function CommunityScreen() {
   if (!community) {
     return (
       <View style={[styles.container, styles.centerContent]}>
-        <Text style={{ color: isDark ? Colors.gray[300] : Colors.gray[700] }}>
+        <Text style={{ color: Colors[`${colorScheme}`].text }}>
           Community not found
         </Text>
       </View>
@@ -36,13 +35,13 @@ export default function CommunityScreen() {
     <ScrollView
       style={[
         styles.container,
-        { backgroundColor: isDark ? Colors.gray[900] : Colors.background }
+        { backgroundColor: Colors[`${colorScheme}`].background }
       ]}
     >
       <View style={styles.headerContainer}>
         <Text style={[
           styles.title,
-          { color: isDark ? Colors.gray[100] : Colors.text }
+          { color: Colors[`${colorScheme}`].text }
         ]}>
           {community.name}
         </Text>
@@ -55,35 +54,35 @@ export default function CommunityScreen() {
 
       <View style={styles.detailsContainer}>
         <View style={styles.infoRow}>
-          <MaterialIcons name="location-on" size={20} color={Colors.gray[600]} />
+          <MaterialIcons name="location-on" size={20} color={Colors[`${colorScheme}`].gray600} />
           <View style={styles.infoContent}>
             <Text style={styles.label}>Location</Text>
-            <Text style={styles.value}>{community.address || 'Unknown location'}</Text>
+            <Text style={{ color: Colors[`${colorScheme}`].text }}>{community.address || 'Unknown location'}</Text>
           </View>
         </View>
 
         <View style={styles.infoRow}>
-          <MaterialIcons name="church" size={20} color={Colors.gray[600]} />
+          <MaterialIcons name="church" size={20} color={Colors[`${colorScheme}`].gray600} />
           <View style={styles.infoContent}>
             <Text style={styles.label}>Diocese</Text>
-            <Text style={styles.value}>{community.diocese || 'Unknown diocese'}</Text>
+            <Text style={{ color: Colors[`${colorScheme}`].text }}>{community.diocese || 'Unknown diocese'}</Text>
           </View>
         </View>
 
         <View style={styles.infoRow}>
-          <MaterialIcons name="phone" size={20} color={Colors.gray[600]} />
+          <MaterialIcons name="phone" size={20} color={Colors[`${colorScheme}`].gray600} />
           <View style={styles.infoContent}>
             <Text style={styles.label}>Contact</Text>
-            <Text style={styles.value}>{community.phone || 'No contact information'}</Text>
+            <Text style={{ color: Colors[`${colorScheme}`].text }}>{community.phone || 'No contact information'}</Text>
           </View>
         </View>
 
         {community.email && (
           <View style={styles.infoRow}>
-            <MaterialIcons name="email" size={20} color={Colors.gray[600]} />
+            <MaterialIcons name="email" size={20} color={Colors[`${colorScheme}`].gray600} />
             <View style={styles.infoContent}>
               <Text style={styles.label}>Email</Text>
-              <Text style={styles.value}>{community.email}</Text>
+              <Text style={{ color: Colors[`${colorScheme}`].text }}>{community.email}</Text>
             </View>
           </View>
         )}
@@ -92,7 +91,7 @@ export default function CommunityScreen() {
         <View style={styles.membersSection}>
           <Text style={[
             styles.sectionTitle,
-            { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             Members ({communityMembers.length})
           </Text>
@@ -103,7 +102,10 @@ export default function CommunityScreen() {
                 key={member.id}
                 style={[
                   styles.memberItem,
-                  { backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100] }
+                  { backgroundColor: Colors[`${colorScheme}`].background,
+                    borderColor: Colors[`${colorScheme}`].border,
+                    borderWidth: 2,
+                  }
                 ]}
               >
                 <TouchableOpacity 
@@ -114,7 +116,7 @@ export default function CommunityScreen() {
                     >
                 <Text style={[
                   styles.memberName,
-                  { color: isDark ? Colors.gray[100] : Colors.text }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   {member.name}
                 </Text>
@@ -125,7 +127,7 @@ export default function CommunityScreen() {
               </View>
             ))
           ) : (
-            <Text style={{ color: isDark ? Colors.gray[400] : Colors.gray[600] }}>
+            <Text style={{ color: Colors[`${colorScheme}`].textSecondary }}>
               No members found in this community
             </Text>
           )}
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    borderBottomColor: Color.gray[200],
   },
   title: {
     fontSize: 24,
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.gray[500],
+    color: Color.gray[500],
   },
   detailsContainer: {
     padding: 20,
@@ -172,12 +174,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginBottom: 2,
-  },
-  value: {
-    fontSize: 16,
-    color: Colors.white,
   },
   membersSection: {
     marginTop: 24,
@@ -198,7 +196,7 @@ const styles = StyleSheet.create({
   },
   memberRole: {
     fontSize: 14,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginTop: 4,
   },
 });

@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FirebaseService } from '../services/firebase';
 import { useEffect } from 'react';
-import { usePathname, useRouter } from 'expo-router';
+import { usePathname, useRouter, useRootNavigationState } from 'expo-router';
 import { DataStorage } from '@/services/storage';
 import { CurrentJesuit } from '@/types/api';
 import { authAPI } from '@/services/api';
@@ -76,25 +76,25 @@ export const useAuth = create<AuthState>()(
   )
 );
 
-export const useAuthGuard = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const pathname = usePathname();
+export const useAuthGuard = (rootLayoutReady: boolean) => {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
-  
+  const pathname = usePathname();
+  const navigationState = useRootNavigationState();
+
   useEffect(() => {
-    if (!isLoading) {
-      const isAuthRoute = pathname.includes('(auth)');
-      const isVerifyRoute = pathname.includes('verify');
-      
-      if (!isAuthenticated && !isAuthRoute && !isVerifyRoute) {
-        router.replace('/(auth)/login');
-      } else if (isAuthenticated && isAuthRoute) {
-        setTimeout(() => {
-          router.replace('/(app)/home');
-        }, 0);
-      }
+    if (isAuthLoading || !rootLayoutReady || !navigationState?.key) {
+      return;
     }
-  }, [isAuthenticated, isLoading, pathname]);
+
+    const isAuthGroup = pathname.startsWith('/(auth)');
+
+    if (!isAuthenticated && !isAuthGroup) {
+      router.replace('/(auth)/login');
+    } else if (isAuthenticated && isAuthGroup) {
+      router.replace('/(app)/home');
+    }
+  }, [isAuthenticated, isAuthLoading, rootLayoutReady, pathname, router, navigationState?.key]);
 };
 
 export const useInitAuth = () => {

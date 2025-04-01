@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Colors from '@/constants/Colors';
+import {Color} from '@/constants/Colors';
 
 // Define statistic data types
 interface StatisticData {
@@ -16,24 +16,24 @@ interface StatisticCardProps {
 }
 
 export default function StatisticCard({ statistic, type }: StatisticCardProps) {
-  // Generate background colors based on statistic type
+  // Generate background Color based on statistic type
   const getBackgroundColor = () => {
     if (statistic.color) return statistic.color + '20'; // Use provided color with opacity
     
-    // Default colors based on type
+    // Default Color based on type
     switch (type) {
       case 'age_distribution':
-        return Colors.blue[100];
+        return Color.blue[500];
       case 'formation_stages':
-        return Colors.green[100];
+        return Color.green[500];
       case 'geographical':
-        return Colors.purple[100];
+        return Color.purple[500];
       case 'ministry_types':
-        return Colors.orange[100];
+        return Color.orange[500];
       case 'yearly_trends':
-        return Colors.teal[100];
+        return Color.teal[500];
       default:
-        return Colors.gray[100];
+        return Color.gray[500];
     }
   };
 
@@ -53,7 +53,7 @@ export default function StatisticCard({ statistic, type }: StatisticCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -65,13 +65,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: Colors.gray[700],
+    color: Color.gray[700],
     marginBottom: 8,
   },
   value: {
     fontSize: 24,
     fontWeight: '600',
-    color: Colors.text,
+    color: Color.text,
     marginBottom: 8,
   },
   percentageContainer: {
@@ -79,13 +79,13 @@ const styles = StyleSheet.create({
   },
   percentageBar: {
     height: 8,
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     borderRadius: 4,
     marginBottom: 4,
   },
   percentageText: {
     fontSize: 12,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     textAlign: 'right',
   },
 }); 

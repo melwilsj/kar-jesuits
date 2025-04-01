@@ -1,5 +1,5 @@
 import { Drawer } from 'expo-router/drawer';
-import { useColorScheme } from 'react-native';
+import { useColorScheme } from '@/hooks/useSettings';
 import Colors from '../../constants/Colors';
 import CustomDrawer from '@/components/CustomDrawer';
 import SearchHeader from '@/components/SearchHeader';
@@ -14,14 +14,14 @@ export default function AppLayout() {
       <Drawer
         screenOptions={{
           headerStyle: {
-            backgroundColor: isDark ? '#000' : '#fff',
+            backgroundColor: Colors[`${colorScheme}`].background,
           },
           headerTintColor: isDark ? '#fff' : '#000',
           drawerStyle: {
-            backgroundColor: isDark ? '#000' : '#fff',
+            backgroundColor: Colors[`${colorScheme}`].background,
           },
-          drawerActiveTintColor: Colors.primary,
-          drawerInactiveTintColor: Colors.gray[400],
+          drawerActiveTintColor: Colors[`${colorScheme}`].primary,
+          drawerInactiveTintColor: Colors[`${colorScheme}`].gray400,
           headerTitle: '',
           headerLeft: () => <SearchHeader />,
         }}

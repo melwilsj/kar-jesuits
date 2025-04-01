@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useDataSync } from '@/hooks/useDataSync';
 import { useFilteredData } from '@/hooks/useFilteredData';
@@ -17,7 +18,7 @@ export default function CommunitiesFilterScreen() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
-  
+  const colorScheme = useColorScheme();
   // Filter options
   const filterOptions = [
     { id: 'diocese', label: 'Diocese', icon: 'church' },
@@ -105,7 +106,7 @@ export default function CommunitiesFilterScreen() {
             >
               <Text style={styles.optionText}>{option}</Text>
               {selectedOption === option && (
-                <MaterialIcons name="check" size={18} color={Colors.primary} />
+                <MaterialIcons name="check" size={18} color={Colors[`${colorScheme}`].primary} />
               )}
             </TouchableOpacity>
           ))}
@@ -148,7 +149,7 @@ export default function CommunitiesFilterScreen() {
                 <MaterialIcons 
                   name={filter.icon as any} 
                   size={20} 
-                  color={activeFilter === filter.id ? Colors.primary : Colors.gray[600]} 
+                  color={activeFilter === filter.id ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].gray600} 
                 />
                 <Text style={[
                   styles.filterText,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   filterPanel: {
     width: 250,
     borderRightWidth: 1,
-    borderRightColor: Colors.gray[200],
+    borderRightColor: Color.gray[200],
     padding: 16,
   },
   contentPanel: {
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 16,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   filterItem: {
     flexDirection: 'row',
@@ -237,15 +238,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   activeFilterItem: {
-    backgroundColor: Colors.primary + '10',
+    backgroundColor: Color.primary + '10',
   },
   filterText: {
     marginLeft: 12,
     fontSize: 14,
-    color: Colors.text,
+    color: Color.text,
   },
   activeFilterText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
   },
   optionsContainer: {
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   optionsList: {
     maxHeight: 200,
@@ -267,32 +268,32 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Color.gray[100],
     marginBottom: 8,
   },
   selectedOption: {
-    backgroundColor: Colors.primary + '10',
+    backgroundColor: Color.primary + '10',
   },
   optionText: {
     fontSize: 14,
-    color: Colors.text,
+    color: Color.text,
   },
   infoText: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     fontStyle: 'italic',
   },
   resultsContainer: {
     flex: 1,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
+    borderTopColor: Color.gray[200],
     paddingTop: 16,
   },
   resultsTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   resultsList: {
     flex: 1,
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
   errorContainer: {
     flex: 1,
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: Colors.error,
+    color: Color.error,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     textAlign: 'center',
   },
 });

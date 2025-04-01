@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useDataSync } from '@/hooks/useDataSync';
 import { useFilteredData } from '@/hooks/useFilteredData';
@@ -10,6 +11,7 @@ import InstitutionItem from '@/components/InstitutionItem';
 import InstitutionSkeleton from '@/components/ui/skeletons/InstitutionSkeleton';
 
 export default function InstitutionsFilterScreen() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const { communities } = useDataSync();
   const { 
@@ -163,7 +165,7 @@ export default function InstitutionsFilterScreen() {
                 <MaterialIcons
                   name={option.icon as any}
                   size={22}
-                  color={activeFilter === option.id ? Colors.primary : Colors.gray[600]}
+                  color={activeFilter === option.id ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].secondary}
                 />
                 <Text 
                   style={[
@@ -222,17 +224,23 @@ export default function InstitutionsFilterScreen() {
         <View style={styles.resultsContainer}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={Colors.primary} />
+              <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
               <Text style={styles.loadingText}>Loading institutions...</Text>
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
-              <MaterialIcons name="error-outline" size={32} color={Colors.error} />
-              <Text style={styles.errorText}>{error}</Text>
+              <MaterialIcons name="error-outline" size={32} color={Colors[`${colorScheme}`].error} />
+              <Text style={[
+                styles.errorText,
+                { color: Colors[`${colorScheme}`].text }
+              ]}>{error}</Text>
             </View>
           ) : results.length > 0 ? (
             <>
-              <Text style={styles.resultsTitle}>
+              <Text style={[
+                styles.resultsTitle,
+                { color: Colors[`${colorScheme}`].text }
+              ]}>
                 Found {results.length} {results.length === 1 ? 'institution' : 'institutions'}
               </Text>
               
@@ -273,7 +281,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   filterOptionsContainer: {
     flexDirection: 'row',
@@ -287,21 +295,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Color.gray[100],
     marginBottom: 8,
   },
   selectedFilterChip: {
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: Color.primary + '15',
     borderWidth: 1,
-    borderColor: Colors.primary + '40',
+    borderColor: Color.primary + '40',
   },
   filterChipText: {
     fontSize: 14,
     marginLeft: 8,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   selectedFilterChipText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
   },
   optionChipsContainer: {
@@ -312,31 +320,31 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 16,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Color.gray[100],
     marginRight: 8,
   },
   selectedOptionChip: {
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: Color.primary + '15',
     borderWidth: 1,
-    borderColor: Colors.primary + '40',
+    borderColor: Color.primary + '40',
   },
   optionChipText: {
     fontSize: 14,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   selectedOptionChipText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
   },
   infoText: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     fontStyle: 'italic',
   },
   resultsContainer: {
     flex: 1,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
+    borderTopColor: Color.gray[200],
     paddingTop: 12,
     marginTop: 8,
   },
@@ -347,7 +355,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
   resultsList: {
     flex: 1,
@@ -356,7 +364,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   errorContainer: {
     padding: 16,
@@ -364,7 +372,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: Colors.error,
+    color: Color.error,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -374,7 +382,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.gray[600],
+      color: Color.gray[600],
     textAlign: 'center',
   },
   paginationControls: {
@@ -384,7 +392,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
+    borderTopColor: Color.gray[200],
   },
   paginationButton: {
     flexDirection: 'row',
@@ -392,11 +400,11 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   paginationButtonText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
     marginHorizontal: 4,
   },
   paginationInfo: {
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
 });

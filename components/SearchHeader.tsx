@@ -4,8 +4,8 @@ import { DrawerActions } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
 import { usePathname } from 'expo-router';
 import SearchBar from './SearchBar';
-import { useColorScheme } from 'react-native';
-import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
+import Colors, { Color } from '@/constants/Colors';
 import { useState, useEffect, useRef } from 'react';
 import SearchResultsDropdown from './SearchResultsDropdown';
 import { TextInput } from 'react-native';
@@ -14,7 +14,6 @@ export default function SearchHeader() {
   const navigation = useNavigation();
   const pathname = usePathname();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<TextInput>(null);
@@ -80,7 +79,7 @@ export default function SearchHeader() {
       <MaterialIcons 
         name="menu" 
         size={24} 
-        color={isDark ? Colors.gray[100] : Colors.gray[900]}
+        color={Colors[`${colorScheme}`].icon}
         onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         style={styles.menuIcon}
       />

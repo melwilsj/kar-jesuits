@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useSettings';
 import { Stack } from 'expo-router';
 import ScaledText from '@/components/ScaledText';
@@ -24,7 +24,6 @@ interface Notification {
 
 export default function Notifications() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -137,16 +136,16 @@ export default function Notifications() {
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'success':
-        return Colors.success;
+        return Colors[`${colorScheme}`].success;
       case 'warning':
-        return Colors.warning;
+        return Colors[`${colorScheme}`].warning;
       case 'error':
-        return Colors.error;
+        return Colors[`${colorScheme}`].error;
       case 'announcement':
-        return Colors.primary;
+        return Colors[`${colorScheme}`].primary;
       case 'info':
       default:
-        return Colors.primary;
+        return Colors[`${colorScheme}`].primary;
     }
   };
 
@@ -158,7 +157,7 @@ export default function Notifications() {
         <View style={styles.header}>
           <ScaledText style={[
             styles.title, 
-            { color: isDark ? Colors.white : Colors.gray[800] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             Notifications
           </ScaledText>
@@ -167,7 +166,7 @@ export default function Notifications() {
         <TouchableOpacity 
           style={[
             styles.refreshButton,
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.gray[200] }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}
           onPress={() => fetchNotifications(true)}
           disabled={isLoading}
@@ -175,11 +174,11 @@ export default function Notifications() {
           <MaterialIcons 
             name="refresh" 
             size={20} 
-            color={isDark ? Colors.gray[300] : Colors.gray[700]} 
+            color={Colors[`${colorScheme}`].icon} 
           />
           <ScaledText style={[
             styles.refreshButtonText,
-            { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+            { color: Colors[`${colorScheme}`].textSecondary }
           ]}>
             Refresh
           </ScaledText>
@@ -187,7 +186,7 @@ export default function Notifications() {
         
         {isLoading && notifications.length === 0 ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
+            <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
           </View>
         ) : notifications.length > 0 ? (
           <FlatList
@@ -198,15 +197,15 @@ export default function Notifications() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={[Colors.primary]}
-                tintColor={Colors.primary}
+                colors={[Colors[`${colorScheme}`].primary]}
+                tintColor={Colors[`${colorScheme}`].primary}
               />
             }
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
                   styles.notificationItem,
-                  { backgroundColor: isDark ? Colors.gray[800] : Colors.white },
+                  { backgroundColor: Colors[`${colorScheme}`].background },
                   item.is_read ? styles.readNotification : null
                 ]}
                 onPress={() => markAsRead(item.id)}
@@ -230,7 +229,7 @@ export default function Notifications() {
                       style={[
                         styles.notificationTitle,
                         { 
-                          color: isDark ? Colors.gray[100] : Colors.gray[800],
+                          color: Colors[`${colorScheme}`].text,
                           fontWeight: item.is_read ? '400' : '600'
                         }
                       ]}
@@ -242,7 +241,7 @@ export default function Notifications() {
                     <ScaledText 
                       style={[
                         styles.timestamp,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[500] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}
                     >
                       {formatTimestamp(item.sent_at)}
@@ -256,7 +255,7 @@ export default function Notifications() {
                   <ScaledText 
                     style={[
                       styles.message,
-                      { color: isDark ? Colors.gray[300] : Colors.gray[600] }
+                      { color: Colors[`${colorScheme}`].textSecondary }
                     ]}
                     numberOfLines={2}
                   >
@@ -271,18 +270,18 @@ export default function Notifications() {
             <MaterialIcons 
               name="notifications-off" 
               size={48} 
-              color={isDark ? Colors.gray[600] : Colors.gray[400]} 
+              color={Colors[`${colorScheme}`].textSecondary} 
               style={styles.emptyIcon}
             />
             <ScaledText style={[
               styles.emptyText,
-              { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+              { color: Colors[`${colorScheme}`].textSecondary }
             ]}>
               No notifications
             </ScaledText>
             <ScaledText style={[
               styles.emptySubtext,
-              { color: isDark ? Colors.gray[500] : Colors.gray[500] }
+              { color: Colors[`${colorScheme}`].textSecondary }
             ]}>
               Tap refresh to check for new notifications
             </ScaledText>
@@ -312,7 +311,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   clearButtonText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontSize: 14,
   },
   refreshButton: {
@@ -402,7 +401,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     marginLeft: 8,
   },
 }); 

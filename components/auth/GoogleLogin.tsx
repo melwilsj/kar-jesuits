@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 
 interface GoogleLoginProps {
   onPress: () => Promise<void>;
@@ -23,11 +23,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Color.border,
   },
   icon: {
     width: 24,
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   text: {
-    color: Colors.text,
+    color: Color.text,
     fontSize: 16,
     fontWeight: '500',
   },

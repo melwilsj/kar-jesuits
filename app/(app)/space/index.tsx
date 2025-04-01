@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { router } from 'expo-router';
 import { useColorScheme } from '@/hooks/useSettings';
 import { Stack } from 'expo-router';
@@ -11,7 +11,6 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function Space() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const { currentJesuit } = useAuth();
   
   const spaceOptions = [
@@ -53,13 +52,13 @@ export default function Space() {
         <View style={styles.header}>
           <ScaledText style={[
             styles.greeting, 
-            { color: isDark ? Colors.gray[100] : Colors.gray[800] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             Hello, {currentJesuit?.name || 'User'}
           </ScaledText>
           <ScaledText style={[
             styles.subtitle, 
-            { color: isDark ? Colors.gray[300] : Colors.gray[600] }
+            { color: Colors[`${colorScheme}`].textSecondary }
           ]}>
             Your personal space for documents and requests
           </ScaledText>
@@ -71,29 +70,29 @@ export default function Space() {
               key={option.id}
               style={[
                 styles.optionCard,
-                { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+                { backgroundColor: Colors[`${colorScheme}`].card }
               ]}
               onPress={() => router.push(option.route as any)}
             >
               <View style={[
                 styles.iconContainer, 
-                { backgroundColor: isDark ? Colors.gray[700] : Colors.gray[100] }
+                { backgroundColor: Colors[`${colorScheme}`].background }
               ]}>
                 <MaterialIcons
                   name={option.icon as any}
                   size={24}
-                  color={Colors.primary}
+                  color={Colors[`${colorScheme}`].primary}
                 />
               </View>
               <ScaledText style={[
                 styles.optionTitle,
-                { color: isDark ? Colors.white : Colors.gray[800] }
+                { color: Colors[`${colorScheme}`].text }
               ]}>
                 {option.title}
               </ScaledText>
               <ScaledText style={[
                 styles.optionDescription,
-                { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 {option.description}
               </ScaledText>

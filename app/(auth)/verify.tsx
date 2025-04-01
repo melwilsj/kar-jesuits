@@ -4,7 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { FirebaseService } from '@/services/firebase';
 import { authAPI, dataAPI } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import LoadingProgress from '@/components/ui/LoadingProgress';
 
@@ -122,23 +122,23 @@ export default function Verify() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
     padding: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.text,
+    color: Color.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginBottom: 24,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Color.border,
     borderRadius: 8,
     padding: 16,
     fontSize: 18,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   button: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: Colors.background,
+    color: Color.background,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -164,14 +164,14 @@ const styles = StyleSheet.create({
 
 const additionalStyles = StyleSheet.create({
   inputError: {
-    borderColor: Colors.error,
+    borderColor: Color.error,
   },
   resendButton: {
     marginTop: 16,
     alignItems: 'center',
   },
   resendText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontSize: 14,
     fontWeight: '500',
   },

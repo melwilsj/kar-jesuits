@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme as useDeviceColorScheme } from 'react-native';
 import { useEffect } from 'react';
 
-type ThemeMode = 'system' | 'light' | 'dark';
+type ThemeMode = 'light' | 'dark';
 type FontSize = 'small' | 'medium' | 'large';
 type SyncFrequency = 'manual' | 'daily' | 'always';
 
@@ -26,7 +26,7 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       // Default values
-      themeMode: 'system',
+      themeMode: 'dark',
       fontSize: 'medium',
       syncFrequency: 'daily',
       showNotifications: true,
@@ -48,10 +48,6 @@ export const useSettingsStore = create<SettingsState>()(
 export function useColorScheme() {
   const deviceColorScheme = useDeviceColorScheme();
   const { themeMode } = useSettingsStore();
-  
-  if (themeMode === 'system') {
-    return deviceColorScheme;
-  }
   
   return themeMode;
 }

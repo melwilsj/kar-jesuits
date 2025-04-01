@@ -2,23 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import { useInstitution } from '@/hooks/useDataUtils';
 import ScreenContainer from '@/components/ScreenContainer';
 
 export default function InstitutionScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colorScheme = useColorScheme(); 
   const { institution, institutionJesuits, loading } = useInstitution(Number(id));
   
   if (loading) {
     return (
       <ScreenContainer>
         <View style={[styles.container, styles.centerContent]}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
         </View>
       </ScreenContainer>
     );
@@ -28,7 +27,7 @@ export default function InstitutionScreen() {
     return (
       <ScreenContainer>
         <View style={[styles.container, styles.centerContent]}>
-          <Text style={{ color: isDark ? Colors.gray[300] : Colors.gray[700] }}>
+          <Text style={{ color: Colors[`${colorScheme}`].textSecondary }}>
             Institution not found
           </Text>
         </View>
@@ -98,11 +97,11 @@ export default function InstitutionScreen() {
         {/* Header Card */}
         <View style={[
           styles.card,
-          { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+          { backgroundColor: Colors[`${colorScheme}`].background }
         ]}>
           <Text style={[
             styles.title,
-            { color: isDark ? Colors.gray[100] : Colors.text }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             {institution.name}
           </Text>
@@ -111,7 +110,7 @@ export default function InstitutionScreen() {
             <MaterialIcons 
               name={getInstitutionTypeIcon()} 
               size={16} 
-              color={Colors.white} 
+              color={Colors[`${colorScheme}`].primary} 
             />
             <Text style={styles.typeChipText}>
               {getInstitutionTypeName()}
@@ -122,11 +121,11 @@ export default function InstitutionScreen() {
         {/* Location & Contact Card */}
         <View style={[
           styles.card,
-          { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+          { backgroundColor: Colors[`${colorScheme}`].background }
         ]}>
           <Text style={[
             styles.cardTitle,
-            { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             Location & Contact
           </Text>
@@ -136,19 +135,19 @@ export default function InstitutionScreen() {
               <MaterialIcons 
                 name="location-city" 
                 size={20} 
-                color={Colors.primary} 
+                color={Colors[`${colorScheme}`].primary} 
                 style={styles.infoIcon}
               />
               <View>
                 <Text style={[
                   styles.infoLabel,
-                  { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Diocese
                 </Text>
                 <Text style={[
                   styles.infoValue,
-                  { color: isDark ? Colors.gray[100] : Colors.text }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   {institution.diocese}
                 </Text>
@@ -161,19 +160,19 @@ export default function InstitutionScreen() {
               <MaterialIcons 
                 name="location-on" 
                 size={20} 
-                color={Colors.primary} 
+                color={Colors[`${colorScheme}`].primary} 
                 style={styles.infoIcon}
               />
               <View style={styles.infoContent}>
                 <Text style={[
                   styles.infoLabel,
-                  { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Address
                 </Text>
                 <Text style={[
                   styles.infoValue,
-                  { color: isDark ? Colors.gray[100] : Colors.text }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   {institution.address}
                   {institution.district && `, ${institution.district}`}
@@ -188,20 +187,20 @@ export default function InstitutionScreen() {
               <MaterialIcons 
                 name="call" 
                 size={20} 
-                color={Colors.primary} 
+                color={Colors[`${colorScheme}`].primary} 
                 style={styles.infoIcon}
               />
               <View style={styles.infoContent}>
                 <Text style={[
                   styles.infoLabel,
-                  { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Contact
                 </Text>
                 {institution.contact_details.phones && institution.contact_details.phones.length > 0 && (
                   <Text style={[
                     styles.infoValue,
-                    { color: isDark ? Colors.gray[100] : Colors.text }
+                    { color: Colors[`${colorScheme}`].text }
                   ]}>
                     {institution.contact_details.phones.join(', ')}
                   </Text>
@@ -209,7 +208,7 @@ export default function InstitutionScreen() {
                 {institution.contact_details.emails && institution.contact_details.emails.length > 0 && (
                   <Text style={[
                     styles.infoValue,
-                    { color: isDark ? Colors.gray[100] : Colors.text, marginTop: 2 }
+                    { color: Colors[`${colorScheme}`].text, marginTop: 2 }
                   ]}>
                     {institution.contact_details.emails.join(', ')}
                   </Text>
@@ -217,7 +216,7 @@ export default function InstitutionScreen() {
                 {institution.contact_details.website && (
                   <Text style={[
                     styles.infoValue,
-                    { color: Colors.primary, marginTop: 2, textDecorationLine: 'underline' }
+                    { color: Colors[`${colorScheme}`].primary, marginTop: 2, textDecorationLine: 'underline' }
                   ]}>
                     {institution.contact_details.website}
                   </Text>
@@ -231,20 +230,20 @@ export default function InstitutionScreen() {
               <MaterialIcons 
                 name="home" 
                 size={20} 
-                color={Colors.primary} 
+                color={Colors[`${colorScheme}`].primary} 
                 style={styles.infoIcon}
               />
               <View style={styles.infoContent}>
                 <Text style={[
                   styles.infoLabel,
-                  { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                  { color: Colors[`${colorScheme}`].textSecondary }
                 ]}>
                   Associated Community
                 </Text>
                 <TouchableOpacity onPress={() => router.push(`/community/${institution.community?.id}`)}>
                   <Text style={[
                     styles.infoValue,
-                    { color: Colors.primary, textDecorationLine: 'underline' }
+                    { color: Colors[`${colorScheme}`].primary, textDecorationLine: 'underline' }
                   ]}>
                     {institution.community.name}
                   </Text>
@@ -258,11 +257,11 @@ export default function InstitutionScreen() {
         {(institution.student_demographics || institution.staff_demographics) && (
           <View style={[
             styles.card,
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <Text style={[
               styles.cardTitle,
-              { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+              { color: Colors[`${colorScheme}`].text }
             ]}>
               Demographics
             </Text>
@@ -270,10 +269,10 @@ export default function InstitutionScreen() {
             {institution.student_demographics && (
               <View style={styles.demographicsSection}>
                 <View style={styles.demographicsHeader}>
-                  <MaterialIcons name="school" size={18} color={Colors.primary} />
+                  <MaterialIcons name="school" size={18} color={Colors[`${colorScheme}`].primary} />
                   <Text style={[
                     styles.demographicsSectionTitle,
-                    { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                    { color: Colors[`${colorScheme}`].text }
                   ]}>
                     Students
                   </Text>
@@ -283,13 +282,13 @@ export default function InstitutionScreen() {
                   <View style={styles.demographicsItem}>
                     <Text style={[
                       styles.demographicsValue,
-                      { color: isDark ? Colors.gray[100] : Colors.text }
+                      { color: Colors[`${colorScheme}`].text }
                     ]}>
                       {institution.student_demographics.boys + institution.student_demographics.girls}
                     </Text>
                     <Text style={[
                       styles.demographicsLabel,
-                      { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                      { color: Colors[`${colorScheme}`].textSecondary }
                     ]}>
                       Total
                     </Text>
@@ -299,13 +298,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.student_demographics.boys}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Boys
                       </Text>
@@ -316,13 +315,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.student_demographics.girls}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Girls
                       </Text>
@@ -335,13 +334,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.student_demographics.catholics}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Catholics
                       </Text>
@@ -352,13 +351,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.student_demographics.other_christians}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Other Christians
                       </Text>
@@ -369,13 +368,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.student_demographics.non_christians}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Non-Christians
                       </Text>
@@ -388,10 +387,10 @@ export default function InstitutionScreen() {
             {institution.staff_demographics && (
               <View style={styles.demographicsSection}>
                 <View style={styles.demographicsHeader}>
-                  <MaterialIcons name="people" size={18} color={Colors.primary} />
+                  <MaterialIcons name="people" size={18} color={Colors[`${colorScheme}`].primary} />
                   <Text style={[
                     styles.demographicsSectionTitle, 
-                    { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+                    { color: Colors[`${colorScheme}`].text }
                   ]}>
                     Staff
                   </Text>
@@ -401,13 +400,13 @@ export default function InstitutionScreen() {
                   <View style={styles.demographicsItem}>
                     <Text style={[
                       styles.demographicsValue,
-                      { color: isDark ? Colors.gray[100] : Colors.text }
+                      { color: Colors[`${colorScheme}`].text }
                     ]}>
                       {institution.staff_demographics.total}
                     </Text>
                     <Text style={[
                       styles.demographicsLabel,
-                      { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                      { color: Colors[`${colorScheme}`].textSecondary }
                     ]}>
                       Total
                     </Text>
@@ -417,13 +416,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.staff_demographics.jesuits}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Jesuits
                       </Text>
@@ -434,13 +433,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.staff_demographics.other_religious}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Other Religious
                       </Text>
@@ -453,13 +452,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.staff_demographics.catholics}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Catholics
                       </Text>
@@ -470,13 +469,13 @@ export default function InstitutionScreen() {
                     <View style={styles.demographicsItem}>
                       <Text style={[
                         styles.demographicsValue,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}>
                         {institution.staff_demographics.others}
                       </Text>
                       <Text style={[
                         styles.demographicsLabel,
-                        { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                        { color: Colors[`${colorScheme}`].textSecondary }
                       ]}>
                         Non-Catholics
                       </Text>
@@ -492,11 +491,11 @@ export default function InstitutionScreen() {
         {institutionJesuits && institutionJesuits.length > 0 && (
           <View style={[
             styles.card,
-            { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}>
             <Text style={[
               styles.cardTitle,
-              { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+              { color: Colors[`${colorScheme}`].text }
             ]}>
               Associated Jesuits ({institutionJesuits.length})
             </Text>
@@ -507,15 +506,15 @@ export default function InstitutionScreen() {
                 style={[
                   styles.jesuitItem,
                   { 
-                    backgroundColor: isDark ? Colors.gray[700] : Colors.gray[50],
-                    borderColor: isDark ? Colors.gray[600] : Colors.gray[200],
+                    backgroundColor: Colors[`${colorScheme}`].background,
+                    borderColor: Colors[`${colorScheme}`].border,
                   }
                 ]}
                 onPress={() => router.push(`/profile/${jesuit.id}`)}
               >
                 <Text style={[
                   styles.jesuitName,
-                  { color: isDark ? Colors.gray[100] : Colors.text }
+                  { color: Colors[`${colorScheme}`].text }
                 ]}>
                   {jesuit.name}
                 </Text>
@@ -537,7 +536,7 @@ export default function InstitutionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.gray[50],
+    backgroundColor: Color.gray[50],
   },
   contentContainer: {
     padding: 12,
@@ -565,7 +564,7 @@ const styles = StyleSheet.create({
   typeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 16,
@@ -573,7 +572,7 @@ const styles = StyleSheet.create({
   },
   typeChipText: {
     fontSize: 13,
-    color: Colors.white,
+    color: Color.white,
     marginLeft: 4,
     fontWeight: '500',
   },
@@ -647,14 +646,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   roleChip: {
-    backgroundColor: Colors.primary + '20',
+    backgroundColor: Color.primary + '20',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
   },
   roleChipText: {
     fontSize: 12,
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
   },
 }); 

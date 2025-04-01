@@ -36,22 +36,29 @@ export default function RootLayout() {
   }, []);
 
   useInitAuth();
-  useAuthGuard();
 
+  // Determine the overall loading state for the layout
   const isLoading = !firebaseInitialized || isAuthLoading;
+
+  // Call useAuthGuard and pass the layout readiness state
+  // It should only attempt navigation when isLoading is false
+  useAuthGuard(!isLoading);
 
   useEffect(() => {
     if (!isLoading) {
       SplashScreen.hideAsync();
     }
   }, [isLoading]);
+
+  // Show loading indicator while initializing or syncing
   if (isLoading || isSyncing) {
-    return <LoadingProgress 
-      message={isSyncing ? "Syncing data..." : "Loading..."} 
-      progress={isSyncing ? progress : 0} 
+    return <LoadingProgress
+      message={isSyncing ? "Syncing data..." : (isLoading ? "Initializing..." : "Loading...")} // More specific message
+      progress={isSyncing ? progress : (isLoading ? 0 : undefined)} // Show progress only for sync
     />;
   }
 
+  // Render the main navigator only when not loading
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
     <FontSizeProvider value={fontSizeScale}>
@@ -59,7 +66,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            gestureEnabled: false,
+            gestureEnabled: false, // Consider enabling gestures if appropriate
           }}
         >
           {isAuthenticated ? (

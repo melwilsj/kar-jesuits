@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 
 export default function CommissionSkeleton() {
   return (
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     marginBottom: 10,
     padding: 12,
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     marginRight: 12,
   },
   content: {
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   nameSkeleton: {
     height: 18,
     width: '60%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginBottom: 8,
   },
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   detailItemSkeleton: {
     height: 12,
     width: '80%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginTop: 4,
   },

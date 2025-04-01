@@ -1,43 +1,72 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
-import Layout from '@/constants/Layout';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp, ScrollView, RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
-type ScreenContainerProps = {
+interface ScreenContainerProps {
   children: React.ReactNode;
-  style?: object;
-  withScrollView?: boolean;
-};
-
-export default function ScreenContainer({ 
-  children, 
-  style, 
-  withScrollView = false 
-}: ScreenContainerProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  
-  return (
-    <SafeAreaView 
-      style={[
-        styles.container, 
-        { backgroundColor: isDark ? Colors.gray[100] : Colors.background },
-        style
-      ]}
-    >
-      {children}
-      {/* Add spacer at the bottom */}
-      <View style={styles.bottomSpacer} />
-    </SafeAreaView>
-  );
+  style?: StyleProp<ViewStyle>;
+  scrollable?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
+
+const ScreenContainer: React.FC<ScreenContainerProps> = ({
+  children,
+  style,
+  scrollable = false,
+  refreshing = false,
+  onRefresh,
+}) => {
+  const insets = useSafeAreaInsets();
+  const backgroundColor = useThemeColor({}, 'background'); // Use themed background
+  const tintColor = useThemeColor({}, 'primary'); // For refresh control
+
+  const containerStyle = [
+    styles.container,
+    {
+      backgroundColor, // Apply themed background color
+      paddingTop: insets.top,
+      paddingBottom: insets.bottom,
+      paddingLeft: insets.left,
+      paddingRight: insets.right,
+    },
+    style,
+  ];
+
+  if (scrollable) {
+    return (
+      <ScrollView
+        style={containerStyle}
+        contentContainerStyle={styles.scrollContentContainer}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[tintColor]} // Use themed color
+              tintColor={tintColor} // Use themed color for iOS
+            />
+          ) : undefined
+        }
+      >
+        {children}
+      </ScrollView>
+    );
+  }
+
+  return <View style={containerStyle}>{children}</View>;
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // backgroundColor is set dynamically
   },
-  bottomSpacer: {
-    height: Layout.bottomSpacing-20,
-  }
+  scrollContentContainer: {
+    flexGrow: 1, // Ensure content can grow to fill scroll view if needed
+  },
 });
+
+export default ScreenContainer;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 
 export default function JesuitSkeleton() {
   return (
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     marginBottom: 10,
     padding: 12,
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 12,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
   },
   content: {
     flex: 1,
@@ -45,14 +45,14 @@ const styles = StyleSheet.create({
   nameSkeleton: {
     height: 18,
     width: '70%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginBottom: 8,
   },
   codeSkeleton: {
     height: 14,
     width: '40%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginBottom: 8,
   },
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   detailItemSkeleton: {
     height: 12,
     width: 100,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginRight: 12,
     marginTop: 4,

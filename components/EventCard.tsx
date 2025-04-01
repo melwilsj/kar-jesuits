@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import React from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme } from '@/hooks/useSettings';
 import { Event } from '@/types/api';
 // Helper function to format date
 const formatDate = (dateString: string) => {
@@ -55,7 +55,7 @@ export const EventCard = ({ event, isCompact = false }: { event: Event, isCompac
         <MaterialIcons 
           name={eventTypeIcon()} 
           size={isCompact ? 20 : 24} 
-          color={pastEvent ? Colors.gray[400] : Colors.primary} 
+          color={pastEvent ? Colors[`${colorScheme}`].gray400 : Colors[`${colorScheme}`].primary} 
         />
       </View>
       <View style={styles.eventContent}>
@@ -85,7 +85,7 @@ export const EventCard = ({ event, isCompact = false }: { event: Event, isCompac
           <MaterialIcons 
             name="access-time" 
             size={14} 
-            color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+            color={Colors[`${colorScheme}`].textSecondary} 
           />
           <Text 
             style={[
@@ -100,7 +100,7 @@ export const EventCard = ({ event, isCompact = false }: { event: Event, isCompac
               <MaterialIcons 
                 name="location-on" 
                 size={14} 
-                color={isDark ? Colors.gray[400] : Colors.gray[500]} 
+                color={Colors[`${colorScheme}`].textSecondary} 
                 style={styles.metaIcon} 
               />
               <Text 
@@ -121,7 +121,7 @@ export const EventCard = ({ event, isCompact = false }: { event: Event, isCompac
   
 const styles = StyleSheet.create({
   eventCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     marginBottom: 12,
     padding: 16,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   darkEventCard: {
-    backgroundColor: Colors.gray[800],
+    backgroundColor: Color.gray[800],
     shadowColor: '#000',
     shadowOpacity: 0.2,
   },
@@ -147,17 +147,17 @@ const styles = StyleSheet.create({
   eventIconContainer: {
     width: 40,
     height: 40,
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Color.gray[100],
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   darkIconContainer: {
-    backgroundColor: Colors.gray[700],
+    backgroundColor: Color.gray[700],
   },
   pastIconContainer: {
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
   },
   eventContent: {
     flex: 1,
@@ -165,25 +165,25 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
+    color: Color.text,
     marginBottom: 4,
   },
   darkText: {
-    color: Colors.gray[100],
+    color: Color.gray[100],
   },
   pastText: {
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
   eventDescription: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     marginBottom: 8,
   },
   darkDescriptionText: {
-    color: Colors.gray[400],
+    color: Color.gray[400],
   },
   pastDescriptionText: {
-    color: Colors.gray[500],
+    color: Color.gray[500],
   },
   eventMeta: {
     flexDirection: 'row',
@@ -191,12 +191,12 @@ const styles = StyleSheet.create({
   },
   eventMetaText: {
     fontSize: 12,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginLeft: 4,
     marginRight: 8,
   },
   darkMetaText: {
-    color: Colors.gray[400],
+    color: Color.gray[400],
   },
   metaIcon: {
     marginLeft: 4,

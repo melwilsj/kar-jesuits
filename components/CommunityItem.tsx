@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { Community } from '@/types/api';
+import { useColorScheme } from '@/hooks/useSettings';
 
 interface CommunityItemProps {
   community: Community;
@@ -10,29 +11,30 @@ interface CommunityItemProps {
 }
 
 export default function CommunityItem({ community, onPress }: CommunityItemProps) {
+  const colorScheme = useColorScheme();
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.iconContainer}>
-        <MaterialIcons name="home" size={24} color={Colors.primary} />
+    <TouchableOpacity style={[styles.container, { backgroundColor: Colors[`${colorScheme}`].background }]} onPress={onPress}>
+      <View style={[styles.iconContainer, { backgroundColor: Colors[`${colorScheme}`].background }]}>
+        <MaterialIcons name="home" size={24} color={Colors[`${colorScheme}`].primary} />
       </View>
       <View style={styles.content}>
-        <Text style={styles.name}>{community.name}</Text>
+        <Text style={[styles.name, { color: Colors[`${colorScheme}`].text }]}>{community.name}</Text>
         <View style={styles.details}>
           {community.diocese && (
             <View style={styles.detailItem}>
-              <MaterialIcons name="church" size={14} color={Colors.gray[500]} />
+              <MaterialIcons name="church" size={14} color={Colors[`${colorScheme}`].icon} />
               <Text style={styles.detailText}>{community.diocese}</Text>
             </View>
           )}
           {community.region && (
             <View style={styles.detailItem}>
-              <MaterialIcons name="place" size={14} color={Colors.gray[500]} />
+              <MaterialIcons name="place" size={14} color={Colors[`${colorScheme}`].icon} />
               <Text style={styles.detailText}>{community.region.name}</Text>
             </View>
           )}
         </View>
       </View>
-      <MaterialIcons name="chevron-right" size={20} color={Colors.gray[400]} />
+      <MaterialIcons name="chevron-right" size={20} color={Colors[`${colorScheme}`].icon} />
     </TouchableOpacity>
   );
 }
@@ -41,7 +43,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
     borderRadius: 8,
     marginBottom: 10,
     padding: 12,
@@ -55,7 +56,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -66,7 +66,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.text,
   },
   details: {
     flexDirection: 'row',
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     marginLeft: 4,
   },
 }); 

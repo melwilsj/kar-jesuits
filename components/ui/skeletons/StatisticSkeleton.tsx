@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 
 export default function StatisticSkeleton() {
   return (
@@ -16,7 +16,7 @@ export default function StatisticSkeleton() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -29,14 +29,14 @@ const styles = StyleSheet.create({
   labelSkeleton: {
     height: 14,
     width: '70%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginBottom: 16,
   },
   valueSkeleton: {
     height: 24,
     width: '40%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginBottom: 16,
   },
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   percentageBarSkeleton: {
     height: 8,
     width: '60%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
   },
 }); 

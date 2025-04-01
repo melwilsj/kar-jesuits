@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import ScreenContainer from '@/components/ScreenContainer';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useSettings';
 import { Stack } from 'expo-router';
 import ScaledText from '@/components/ScaledText';
@@ -21,7 +21,6 @@ interface CalendarEvent {
 
 export default function Calendar() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -156,10 +155,10 @@ export default function Calendar() {
   
   const getEventTypeColor = (type: string) => {
     switch(type) {
-      case 'community': return Colors.blue[500];
-      case 'personal': return Colors.green[500];
-      case 'ministry': return Colors.orange[500];
-      default: return Colors.gray[500];
+      case 'community': return Color.blue[500];
+      case 'personal': return Color.green[500];
+      case 'ministry': return Color.orange[500];
+      default: return Colors[`${colorScheme}`].gray500;
     }
   };
   
@@ -185,12 +184,12 @@ export default function Calendar() {
       
       <View style={[
         styles.container,
-        { backgroundColor: isDark ? Colors.gray[900] : Colors.background }
+        { backgroundColor: Colors[`${colorScheme}`].background }
       ]}>
         {/* Calendar Header */}
         <View style={[
           styles.header,
-          { backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100] }
+          { backgroundColor: Colors[`${colorScheme}`].background }
         ]}>
           <TouchableOpacity 
             style={styles.headerButton}
@@ -203,13 +202,13 @@ export default function Calendar() {
             <MaterialIcons 
               name="chevron-left" 
               size={24} 
-              color={isDark ? Colors.gray[300] : Colors.gray[600]} 
+              color={Colors[`${colorScheme}`].icon} 
             />
           </TouchableOpacity>
           
           <ScaledText style={[
             styles.headerTitle,
-            { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </ScaledText>
@@ -225,7 +224,7 @@ export default function Calendar() {
             <MaterialIcons 
               name="chevron-right" 
               size={24} 
-              color={isDark ? Colors.gray[300] : Colors.gray[600]} 
+              color={Colors[`${colorScheme}`].icon} 
             />
           </TouchableOpacity>
         </View>
@@ -236,7 +235,7 @@ export default function Calendar() {
           showsHorizontalScrollIndicator={false}
           style={[
             styles.calendarScroll,
-            { backgroundColor: isDark ? Colors.gray[900] : Colors.white }
+            { backgroundColor: Colors[`${colorScheme}`].background }
           ]}
           contentContainerStyle={styles.calendarScrollContent}
         >
@@ -250,16 +249,10 @@ export default function Calendar() {
                 day.getMonth() === selectedDate.getMonth() && 
                 styles.selectedDayItem,
                 { 
-                  backgroundColor: isDark 
-                    ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                        ? Colors.primary 
+                  backgroundColor: (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
+                        ? Colors[`${colorScheme}`].secondary 
                         : isToday(day) 
-                          ? Colors.gray[700] 
-                          : 'transparent')
-                    : (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                        ? Colors.primary + '20'
-                        : isToday(day) 
-                          ? Colors.gray[200] 
+                          ? Colors[`${colorScheme}`].gray700 
                           : 'transparent')
                 }
               ]}
@@ -268,13 +261,9 @@ export default function Calendar() {
               <ScaledText style={[
                 styles.weekdayText,
                 { 
-                  color: isDark 
-                    ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                        ? Colors.white 
-                        : Colors.gray[400])
-                    : (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                        ? Colors.primary
-                        : Colors.gray[600])
+                  color: (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
+                        ? Colors[`${colorScheme}`].primary
+                        : Colors[`${colorScheme}`].secondary)
                 }
               ]}>
                 {formatWeekday(day)}
@@ -287,33 +276,21 @@ export default function Calendar() {
                 day.getMonth() === selectedDate.getMonth() && 
                 styles.selectedDateCircle,
                 { 
-                  backgroundColor: isDark 
-                    ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                        ? Colors.white 
+                  backgroundColor: (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
+                        ? Colors[`${colorScheme}`].error
                         : isToday(day) 
-                          ? Colors.primary 
-                          : Colors.gray[800])
-                    : (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                        ? Colors.primary
-                        : isToday(day) 
-                          ? Colors.primary + '20' 
-                          : Colors.gray[200])
+                          ? Colors[`${colorScheme}`].success 
+                          : Colors[`${colorScheme}`].gray300)
                 }
               ]}>
                 <ScaledText style={[
                   styles.dateText,
                   { 
-                    color: isDark 
-                      ? (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                          ? Colors.primary
+                    color: (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
+                          ? Colors[`${colorScheme}`].primary
                           : isToday(day) 
-                            ? Colors.white 
-                            : Colors.gray[400])
-                      : (day.getDate() === selectedDate.getDate() && day.getMonth() === selectedDate.getMonth()
-                          ? Colors.white
-                          : isToday(day) 
-                            ? Colors.primary 
-                            : Colors.gray[800])
+                            ? Colors[`${colorScheme}`].primary
+                            : Colors[`${colorScheme}`].secondary)
                   }
                 ]}>
                   {day.getDate()}
@@ -329,7 +306,7 @@ export default function Calendar() {
               }) && (
                 <View style={[
                   styles.eventIndicator,
-                  { backgroundColor: isDark ? Colors.primary : Colors.primary }
+                  { backgroundColor: Colors[`${colorScheme}`].background }
                 ]} />
               )}
             </TouchableOpacity>
@@ -340,14 +317,14 @@ export default function Calendar() {
         <View style={styles.eventsContainer}>
           <ScaledText style={[
             styles.selectedDateText,
-            { color: isDark ? Colors.gray[200] : Colors.gray[800] }
+            { color: Colors[`${colorScheme}`].text }
           ]}>
             {formattedDate}
           </ScaledText>
           
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator color={Colors.primary} size="large" />
+              <ActivityIndicator color={Colors[`${colorScheme}`].primary} size="large" />
             </View>
           ) : selectedDayEvents.length > 0 ? (
             <ScrollView style={styles.eventsList}>
@@ -356,7 +333,7 @@ export default function Calendar() {
                   key={event.id} 
                   style={[
                     styles.eventItem,
-                    { backgroundColor: isDark ? Colors.gray[800] : Colors.white }
+                    { backgroundColor: Colors[`${colorScheme}`].background }
                   ]}
                 >
                   <View style={[
@@ -380,7 +357,7 @@ export default function Calendar() {
                       <ScaledText 
                         style={[
                           styles.eventTitle,
-                          { color: isDark ? Colors.white : Colors.gray[900] }
+                          { color: Colors[`${colorScheme}`].text }
                         ]}
                         numberOfLines={1}
                       >
@@ -390,7 +367,7 @@ export default function Calendar() {
                     
                     <ScaledText style={[
                       styles.eventTime,
-                      { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                      { color: Colors[`${colorScheme}`].textSecondary }
                     ]}>
                       {formatEventTime(event.startTime)} - {formatEventTime(event.endTime)}
                     </ScaledText>
@@ -400,13 +377,13 @@ export default function Calendar() {
                         <MaterialIcons 
                           name="location-on" 
                           size={16} 
-                          color={isDark ? Colors.gray[500] : Colors.gray[600]} 
+                          color={Colors[`${colorScheme}`].icon} 
                           style={styles.eventDetailIcon}
                         />
                         <ScaledText 
                           style={[
                             styles.eventLocation,
-                            { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                            { color: Colors[`${colorScheme}`].textSecondary }
                           ]}
                           numberOfLines={1}
                         >
@@ -419,7 +396,7 @@ export default function Calendar() {
                       <ScaledText 
                         style={[
                           styles.eventDescription,
-                          { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                          { color: Colors[`${colorScheme}`].textSecondary }
                         ]}
                         numberOfLines={2}
                       >
@@ -435,11 +412,11 @@ export default function Calendar() {
               <MaterialIcons 
                 name="event-busy" 
                 size={48} 
-                color={isDark ? Colors.gray[600] : Colors.gray[400]} 
+                color={Colors[`${colorScheme}`].icon} 
               />
               <ScaledText style={[
                 styles.emptyText,
-                { color: isDark ? Colors.gray[400] : Colors.gray[600] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>
                 No events for this day
               </ScaledText>
@@ -462,7 +439,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[300],
+    borderBottomColor: Color.gray[300],
   },
   headerButton: {
     padding: 8,
@@ -474,7 +451,7 @@ const styles = StyleSheet.create({
   calendarScroll: {
     maxHeight: 90,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[300],
+    borderBottomColor: Color.gray[300],
   },
   calendarScrollContent: {
     paddingVertical: 8,
@@ -490,7 +467,7 @@ const styles = StyleSheet.create({
   },
   todayItem: {
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Color.primary,
   },
   selectedDayItem: {
     // Styles applied inline due to color scheme
@@ -521,7 +498,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
   },
   eventsContainer: {
     flex: 1,

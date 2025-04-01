@@ -2,15 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import { useDataSync } from '@/hooks/useDataSync';
 import ScreenContainer from '@/components/ScreenContainer';
 import { EventCard } from '@/components/EventCard';
 import { Event } from '@/types/api';
 export default function EventsScreen() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const { events = [], isLoading } = useDataSync();
   const [filter, setFilter] = useState('upcoming'); // 'all', 'today', 'upcoming', 'past'
   
@@ -71,7 +70,7 @@ export default function EventsScreen() {
       
       <View style={[
         styles.container,
-        { backgroundColor: isDark ? Colors.gray[900] : Colors.background }
+        { backgroundColor: Colors[`${colorScheme}`].background }
       ]}>
         {/* Filter tabs */}
         <View style={styles.filterContainer}>
@@ -153,7 +152,7 @@ export default function EventsScreen() {
         {/* Events list */}
         {isLoading ? (
           <View style={styles.centerContent}>
-            <ActivityIndicator size="large" color={Colors.primary} />
+            <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
           </View>
         ) : filteredEvents.length > 0 ? (
           <FlatList
@@ -167,12 +166,12 @@ export default function EventsScreen() {
             <MaterialIcons 
               name="event-busy" 
               size={48} 
-              color={Colors.gray[400]} 
+              color={Colors[`${colorScheme}`].gray400} 
               style={styles.noEventsIcon}
             />
             <Text style={[
               styles.noEventsText,
-              { color: isDark ? Colors.gray[300] : Colors.gray[600] }
+              { color: Colors[`${colorScheme}`].gray900 }
             ]}>
               No {filter === 'all' ? '' : filter} events found
             </Text>
@@ -195,7 +194,7 @@ const styles = StyleSheet.create({
   filterContainer: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    borderBottomColor: Color.gray[200],
   },
   filtersContent: {
     paddingHorizontal: 16,
@@ -206,17 +205,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: Colors.gray[100]
+    backgroundColor: Color.gray[100]
   },
   activeFilter: {
-    backgroundColor: Colors.primary
+    backgroundColor: Color.primary
   },
   filterText: {
-    color: Colors.gray[700],
+    color: Color.gray[700],
     fontWeight: '500'
   },
   activeFilterText: {
-    color: Colors.white
+    color: Color.white
   },
   eventsList: {
     padding: 16

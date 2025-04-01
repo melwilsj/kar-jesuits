@@ -11,8 +11,8 @@ import {
   Animated,
   TouchableWithoutFeedback
 } from 'react-native';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from 'react-native';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import { useDataSync } from '@/hooks/useDataSync';
 import { Community } from '@/types/api';
 import { router } from 'expo-router';
@@ -29,7 +29,6 @@ export default function SearchResultsDropdown({
   searchQuery
 }: SearchResultsDropdownProps) {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const [includeRegionProvince, setIncludeRegionProvince] = useState(false);
   const { isLoading, error, members, communities, currentJesuit } = useDataSync();
   const [dropdownHeight] = useState(new Animated.Value(0));
@@ -102,7 +101,7 @@ export default function SearchResultsDropdown({
         styles.dropdown,
         { 
           height: dropdownHeight,
-          backgroundColor: isDark ? Colors.gray[900] : Colors.background,
+          backgroundColor: Colors[`${colorScheme}`].background,
         }
       ]}
     >
@@ -110,7 +109,7 @@ export default function SearchResultsDropdown({
       <View style={styles.toggleContainer}>
         <Text style={[
           styles.toggleLabel,
-          { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+          { color: Colors[`${colorScheme}`].textSecondary }
         ]}>Include Region/Province Members</Text>
         
         <TouchableWithoutFeedback
@@ -121,8 +120,8 @@ export default function SearchResultsDropdown({
             <Switch
               value={includeRegionProvince}
               onValueChange={handleToggle}
-              trackColor={{ false: Colors.gray[300], true: Colors.primary }}
-              thumbColor={isDark ? Colors.gray[100] : '#fff'}
+              trackColor={{ false: Colors[`${colorScheme}`].gray300, true: Colors[`${colorScheme}`].primary }}
+              thumbColor={Colors[`${colorScheme}`].gray100}
             />
           </View>
         </TouchableWithoutFeedback>
@@ -130,7 +129,7 @@ export default function SearchResultsDropdown({
 
       {isLoading ? (
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors[`${colorScheme}`].primary} />
         </View>
       ) : error ? (
         <View style={styles.centerContent}>
@@ -148,7 +147,7 @@ export default function SearchResultsDropdown({
             <View style={styles.columnSection}>
               <Text style={[
                 styles.sectionTitle,
-                { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>Jesuits ({filteredMembers.length})</Text>
               
               <ScrollView 
@@ -162,7 +161,7 @@ export default function SearchResultsDropdown({
                     key={member.id}
                     style={[
                       styles.resultItem,
-                      { backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100] }
+                      { backgroundColor: Colors[`${colorScheme}`].background }
                     ]}
                     onPress={() => {
                       router.push(`/(app)/profile/${member.id}`);
@@ -172,7 +171,7 @@ export default function SearchResultsDropdown({
                     <Text 
                       style={[
                         styles.itemTitle,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}
                       numberOfLines={1} // Add ellipsis
                       ellipsizeMode="tail"
@@ -188,7 +187,7 @@ export default function SearchResultsDropdown({
             <View style={styles.columnSection}>
               <Text style={[
                 styles.sectionTitle,
-                { color: isDark ? Colors.gray[300] : Colors.gray[700] }
+                { color: Colors[`${colorScheme}`].textSecondary }
               ]}>Communities ({filteredCommunities.length})</Text>
               
               <ScrollView 
@@ -202,7 +201,7 @@ export default function SearchResultsDropdown({
                     key={community.id}
                     style={[
                       styles.resultItem,
-                      { backgroundColor: isDark ? Colors.gray[800] : Colors.gray[100] }
+                      { backgroundColor: Colors[`${colorScheme}`].background }
                     ]}
                     onPress={() => {
                       router.push(`/(app)/community/${community.id}`);
@@ -212,7 +211,7 @@ export default function SearchResultsDropdown({
                     <Text 
                       style={[
                         styles.itemTitle,
-                        { color: isDark ? Colors.gray[100] : Colors.text }
+                        { color: Colors[`${colorScheme}`].text }
                       ]}
                       numberOfLines={1} // Add ellipsis
                       ellipsizeMode="tail"
@@ -261,7 +260,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    borderBottomColor: Color.gray[200],
   },
   toggleLabel: {
     fontSize: 14,
@@ -302,12 +301,12 @@ const styles = StyleSheet.create({
   },
   itemSubtitle: {
     fontSize: 14,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginTop: 4,
   },
   itemDetails: {
     fontSize: 12,
-    color: Colors.gray[500],
+    color: Color.gray[500],
     marginTop: 2,
   },
   centerContent: {
@@ -317,7 +316,7 @@ const styles = StyleSheet.create({
     minHeight: 200,
   },
   errorText: {
-    color: Colors.error,
+    color: Color.error,
     textAlign: 'center',
   },
 }); 

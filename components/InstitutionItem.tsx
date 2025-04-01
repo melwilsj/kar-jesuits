@@ -1,15 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import { Institution } from '@/types/api';
-
+import { useColorScheme } from '@/hooks/useSettings';
 interface InstitutionItemProps {
   institution: Institution;
   onPress: () => void;
 }
 
 export default function InstitutionItem({ institution, onPress }: InstitutionItemProps) {
+  const colorScheme = useColorScheme();
   const getIconByType = () => {
     switch (institution.type) {
       case 'educational':
@@ -24,28 +25,28 @@ export default function InstitutionItem({ institution, onPress }: InstitutionIte
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.iconContainer}>
-        <MaterialIcons name={getIconByType()} size={24} color={Colors.primary} />
+    <TouchableOpacity style={[styles.container, { backgroundColor: Colors[`${colorScheme}`].background }]} onPress={onPress}>
+      <View style={[styles.iconContainer, { backgroundColor: Colors[`${colorScheme}`].background }]}>
+        <MaterialIcons name={getIconByType()} size={24} color={Colors[`${colorScheme}`].primary} />
       </View>
       <View style={styles.content}>
-        <Text style={styles.name}>{institution.name}</Text>
+        <Text style={[styles.name, { color: Colors[`${colorScheme}`].text }]}>{institution.name}</Text>
         <View style={styles.details}>
           {institution.diocese && (
             <View style={styles.detailItem}>
-              <MaterialIcons name="location-city" size={14} color={Colors.gray[500]} />
+              <MaterialIcons name="location-city" size={14} color={Colors[`${colorScheme}`].icon} />
               <Text style={styles.detailText}>{institution.diocese}</Text>
             </View>
           )}
-          {institution.established && (
+          {institution.community && (
             <View style={styles.detailItem}>
-              <MaterialIcons name="event" size={14} color={Colors.gray[500]} />
-              <Text style={styles.detailText}>Est. {institution.established}</Text>
+              <MaterialIcons name="event" size={14} color={Colors[`${colorScheme}`].icon} />
+              <Text style={styles.detailText}>{institution.community.name}</Text>
             </View>
           )}
         </View>
       </View>
-      <MaterialIcons name="chevron-right" size={20} color={Colors.gray[400]} />
+      <MaterialIcons name="chevron-right" size={20} color={Colors[`${colorScheme}`].icon} />
     </TouchableOpacity>
   );
 }
@@ -54,7 +55,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
     borderRadius: 8,
     marginBottom: 10,
     padding: 12,
@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -79,7 +78,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '500',
-    color: Colors.text,
   },
   details: {
     flexDirection: 'row',
@@ -94,7 +92,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     marginLeft: 4,
   },
 }); 

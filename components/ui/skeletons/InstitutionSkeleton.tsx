@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 
 export default function InstitutionSkeleton() {
   return (
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     marginBottom: 10,
     padding: 12,
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     marginRight: 12,
   },
   content: {
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   nameSkeleton: {
     height: 18,
     width: '70%',
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginBottom: 8,
   },
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   detailItemSkeleton: {
     height: 12,
     width: 150,
-    backgroundColor: Colors.gray[200],
+    backgroundColor: Color.gray[200],
     borderRadius: 4,
     marginRight: 12,
     marginTop: 4,

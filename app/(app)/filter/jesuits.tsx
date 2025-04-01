@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useDataSync } from '@/hooks/useDataSync';
 import { useFilteredData } from '@/hooks/useFilteredData';
@@ -10,6 +11,7 @@ import JesuitItem from '@/components/JesuitItem';
 import JesuitSkeleton from '@/components/ui/skeletons/JesuitSkeleton';
 
 export default function JesuitsFilterScreen() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const { members = [], communities = [] } = useDataSync() || {};
   const { 
@@ -170,7 +172,10 @@ export default function JesuitsFilterScreen() {
     // For other filters that don't need additional options
     return (
       <View style={styles.optionsContainer}>
-        <Text style={styles.infoText}>
+        <Text style={[
+          styles.infoText,
+          { color: Colors[`${colorScheme}`].textSecondary }
+        ]}>
           Showing results for {filterOptions.find(f => f.id === activeFilter)?.label}
         </Text>
       </View>
@@ -209,7 +214,7 @@ export default function JesuitsFilterScreen() {
             style={styles.paginationButton}
             onPress={loadPrevPage}
           >
-            <MaterialIcons name="chevron-left" size={24} color={Colors.primary} />
+            <MaterialIcons name="chevron-left" size={24} color={Colors[`${colorScheme}`].primary} />
             <Text style={styles.paginationButtonText}>Previous</Text>
           </TouchableOpacity>
         )}
@@ -224,7 +229,7 @@ export default function JesuitsFilterScreen() {
             onPress={loadNextPage}
           >
             <Text style={styles.paginationButtonText}>Next</Text>
-            <MaterialIcons name="chevron-right" size={24} color={Colors.primary} />
+            <MaterialIcons name="chevron-right" size={24} color={Colors[`${colorScheme}`].icon} />
           </TouchableOpacity>
         )}
       </View>
@@ -238,25 +243,30 @@ export default function JesuitsFilterScreen() {
       
       <View style={styles.container}>
         <View style={styles.filtersRow}>
-          <Text style={styles.panelTitle}>Filter By</Text>
+          <Text style={[
+            styles.panelTitle,
+            { color: Colors[`${colorScheme}`].text }
+          ]}>Filter By</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {filterOptions.map(filter => (
               <TouchableOpacity
                 key={filter.id}
                 style={[
                   styles.filterChip,
-                  activeFilter === filter.id && styles.activeFilterChip
+                  { backgroundColor: Colors[`${colorScheme}`].background },
+                  activeFilter === filter.id && { backgroundColor: Colors[`${colorScheme}`].gray200 }
                 ]}
                 onPress={() => handleFilterSelect(filter.id)}
               >
                 <MaterialIcons 
                   name={filter.icon as any} 
                   size={20} 
-                  color={activeFilter === filter.id ? Colors.white : Colors.gray[600]} 
+                  color={activeFilter === filter.id ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].secondary} 
                 />
                 <Text style={[
                   styles.filterChipText,
-                  activeFilter === filter.id && styles.activeFilterChipText
+                  { color: Colors[`${colorScheme}`].text },
+                  activeFilter === filter.id && { color: Colors[`${colorScheme}`].primary, fontWeight: '500' }
                 ]}>
                   {filter.label}
                 </Text>
@@ -268,7 +278,10 @@ export default function JesuitsFilterScreen() {
         {renderOptions()}
         
         
-        <View style={styles.resultsContainer}>
+        <View style={[
+          styles.resultsContainer,
+          { borderTopColor: Colors[`${colorScheme}`].border }
+        ]}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               {[...Array(5)].map((_, index) => (
@@ -277,11 +290,17 @@ export default function JesuitsFilterScreen() {
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Error: {error}</Text>
+              <Text style={[
+                styles.errorText,
+                { color: Colors[`${colorScheme}`].text }
+              ]}>Error: {error}</Text>
             </View>
           ) : results && results.length > 0 ? (
             <>
-              <Text style={styles.resultsTitle}>
+              <Text style={[
+                styles.resultsTitle,
+                { color: Colors[`${colorScheme}`].text }
+              ]}>
                 Results {pagination ? `(${results.length} of ${pagination.total})` : `(${results.length})`}
               </Text>
               <ScrollView style={styles.resultsList}>
@@ -325,28 +344,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.gray[100],
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
     marginRight: 8,
   },
-  activeFilterChip: {
-    backgroundColor: Colors.primary,
-  },
   filterChipText: {
     marginLeft: 6,
     fontSize: 14,
-    color: Colors.gray[800],
-  },
-  activeFilterChipText: {
-    color: Colors.white,
-    fontWeight: '500',
   },
   optionsContainer: {
     marginBottom: 16,
@@ -355,40 +364,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   horizontalOptionsList: {
     flexDirection: 'row',
   },
   optionChip: {
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Color.gray[100],
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
     marginRight: 8,
   },
   selectedOptionChip: {
-    backgroundColor: Colors.primary[100],
+    backgroundColor: Color.primary[100],
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Color.primary,
   },
   optionChipText: {
     fontSize: 14,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   selectedOptionChipText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
   },
   infoText: {
     fontSize: 14,
-    color: Colors.gray[600],
     fontStyle: 'italic',
   },
   resultsContainer: {
     flex: 1,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
     paddingTop: 12,
     marginTop: 8,
   },
@@ -402,7 +409,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
-    color: Colors.gray[800],
   },
   errorContainer: {
     padding: 16,
@@ -410,7 +416,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: Colors.error,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -420,7 +425,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     textAlign: 'center',
   },
   paginationControls: {
@@ -430,7 +435,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
+    borderTopColor: Color.gray[200],
   },
   paginationButton: {
     flexDirection: 'row',
@@ -438,22 +443,22 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   paginationButtonText: {
-    color: Colors.primary,
+    color: Color.primary,
     fontWeight: '500',
     marginHorizontal: 4,
   },
   paginationInfo: {
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
   debugButton: {
     alignSelf: 'flex-end',
-    backgroundColor: Colors.gray[100],
+    backgroundColor: Color.gray[100],
     padding: 6,
     borderRadius: 4,
     marginBottom: 8,
   },
   debugButtonText: {
     fontSize: 12,
-    color: Colors.gray[700],
+    color: Color.gray[700],
   },
 }); 

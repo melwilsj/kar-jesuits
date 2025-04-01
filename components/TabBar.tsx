@@ -1,13 +1,12 @@
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { usePathname, router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
+import { useColorScheme } from '@/hooks/useSettings';
 import Colors from '@/constants/Colors';
 
 export default function TabBar() {
   const pathname = usePathname();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   
   const tabs = [
     { name: 'home', label: 'Home', icon: 'home' },
@@ -19,7 +18,9 @@ export default function TabBar() {
   return (
     <View style={[
       styles.container, 
-      { backgroundColor: isDark ? '#000' : '#fff' }
+      { backgroundColor: Colors[`${colorScheme}`].background,
+        borderTopColor: Colors[`${colorScheme}`].border,
+      }
     ]}>
       {tabs.map(tab => {
         const isActive = pathname === `/(app)/${tab.name}`;
@@ -35,12 +36,12 @@ export default function TabBar() {
             <MaterialIcons
               name={tab.icon as any}
               size={22}
-              color={isActive ? Colors.primary : Colors.gray[400]}
+              color={isActive ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].gray400}
             />
             <Text
               style={[
                 styles.label,
-                { color: isActive ? Colors.primary : Colors.gray[400] }
+                { color: isActive ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].gray400 }
               ]}
             >
               {tab.label}
@@ -60,8 +61,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 50,
-    borderTopWidth: 1,
-    borderTopColor: Colors.gray[200],
+    borderTopWidth: 1
   },
   tab: {
     flex: 1,

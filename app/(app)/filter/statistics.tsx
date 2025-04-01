@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useSettings';
 import ScreenContainer from '@/components/ScreenContainer';
 import { useDataSync } from '@/hooks/useDataSync';
 import { useFilteredData } from '@/hooks/useFilteredData';
@@ -10,6 +11,7 @@ import StatisticCard from '@/components/StatisticCard';
 import StatisticSkeleton from '@/components/ui/skeletons/StatisticSkeleton';
 
 export default function StatisticsFilterScreen() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   const { results, isLoading, error, applyFilters } = useFilteredData();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -71,9 +73,9 @@ export default function StatisticsFilterScreen() {
               onPress={() => handleFilterSelect(option.id)}
             >
               <MaterialIcons 
-                name={option.icon} 
+                name={option.icon as any} 
                 size={24} 
-                color={activeFilter === option.id ? Colors.white : Colors.gray[700]} 
+                color={activeFilter === option.id ? Colors[`${colorScheme}`].primary : Colors[`${colorScheme}`].secondary} 
               />
               <Text style={[
                 styles.filterOptionText,
@@ -127,7 +129,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: Colors.background,
+    backgroundColor: Color.background,
   },
   containerVertical: {
     flexDirection: 'column',
@@ -137,20 +139,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 20,
     borderRightWidth: 1,
-    borderRightColor: Colors.gray[200],
+    borderRightColor: Color.gray[200],
   },
   filterPanelVertical: {
     width: '100%',
     borderRightWidth: 0,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.gray[200],
+    borderBottomColor: Color.gray[200],
     paddingBottom: 10,
   },
   filterPanelTitle: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 16,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   filterOption: {
     flexDirection: 'row',
@@ -161,15 +163,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   activeFilterOption: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Color.primary,
   },
   filterOptionText: {
     fontSize: 15,
     marginLeft: 12,
-    color: Colors.gray[700],
+    color: Color.gray[700],
   },
   activeFilterOptionText: {
-    color: Colors.white,
+    color: Color.white,
     fontWeight: '500',
   },
   resultsPanel: {
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
-    color: Colors.gray[800],
+    color: Color.gray[800],
   },
   resultsList: {
     flex: 1,
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
   errorContainer: {
     flex: 1,
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: Colors.error,
+    color: Color.error,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
     textAlign: 'center',
   },
 });

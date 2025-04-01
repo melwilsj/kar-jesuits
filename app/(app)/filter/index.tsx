@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
+import Colors, { Color } from '@/constants/Colors';
 import ScreenContainer from '@/components/ScreenContainer';
+import { useColorScheme } from '@/hooks/useSettings';
 
 type CategoryId = 'jesuits' | 'communities' | 'institutions' | 'commissions' | 'houses' | 'statistics';
 
 export default function FilterScreen() {
+  const colorScheme = useColorScheme();
   const router = useRouter();
   
   const categories = [
@@ -57,8 +59,8 @@ export default function FilterScreen() {
     <ScreenContainer>
       <Stack.Screen options={{ title: 'Filter' }} />
       
-      <ScrollView style={styles.container}>
-        <Text style={styles.heading}>Choose a Category</Text>
+      <ScrollView style={[styles.container, { backgroundColor: Colors[`${colorScheme}`].background }]}>
+        <Text style={[styles.heading, { color: Colors[`${colorScheme}`].text }]}>Choose a Category</Text>
         
         {categories.map(category => (
           <TouchableOpacity
@@ -66,14 +68,14 @@ export default function FilterScreen() {
             style={styles.categoryCard}
             onPress={() => navigateToFilter(category.id as CategoryId)}
           >
-            <View style={styles.iconContainer}>
-              <MaterialIcons name={category.icon as any} size={24} color={Colors.primary} />
+            <View style={[styles.iconContainer, { backgroundColor: Colors[`${colorScheme}`].gray100 }]}>
+              <MaterialIcons name={category.icon as any} size={24} color={Colors[`${colorScheme}`].primary} />
             </View>
             <View style={styles.categoryContent}>
               <Text style={styles.categoryTitle}>{category.title}</Text>
               <Text style={styles.categoryDescription}>{category.description}</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={24} color={Colors.gray[400]} />
+            <MaterialIcons name="chevron-right" size={24} color={Colors[`${colorScheme}`].gray400} />
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -90,12 +92,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginVertical: 16,
     marginHorizontal: 16,
-    color: Colors.gray[800],
   },
   categoryCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Color.white,
     borderRadius: 8,
     marginHorizontal: 16,
     marginBottom: 12,
@@ -110,7 +111,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.gray[100],
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -121,11 +121,11 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
+    color: Color.text,
     marginBottom: 4,
   },
   categoryDescription: {
     fontSize: 14,
-    color: Colors.gray[600],
+    color: Color.gray[600],
   },
 }); 
