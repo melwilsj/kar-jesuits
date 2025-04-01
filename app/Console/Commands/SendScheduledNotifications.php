@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Notification;
-use App\Models\NotificationRecipient;
-use App\Models\User;
+// Remove NotificationRecipient and User imports if not directly used elsewhere
+// use App\Models\NotificationRecipient;
+// use App\Models\User;
 use App\Services\FirebaseNotificationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -15,87 +16,72 @@ class SendScheduledNotifications extends Command
     protected $signature = 'notifications:send-scheduled';
     protected $description = 'Send all scheduled notifications that are due';
 
+    // Inject the service via the constructor
+    protected FirebaseNotificationService $firebaseService;
+
+    public function __construct(FirebaseNotificationService $firebaseService)
+    {
+        parent::__construct();
+        $this->firebaseService = $firebaseService;
+    }
+
     public function handle()
     {
         $this->info('Looking for scheduled notifications...');
-        
-        // Get notifications that are scheduled for today or earlier and have not been sent yet
+
+        // Get notifications that are scheduled for now or earlier and have not been sent yet
         $notifications = Notification::where('is_sent', false)
                                   ->whereNotNull('scheduled_for')
                                   ->where('scheduled_for', '<=', now())
+                                  ->with('recipients') // Eager load recipients
                                   ->get();
-        
+
         $this->info("Found {$notifications->count()} notifications to send.");
-        
+
         if ($notifications->isEmpty()) {
             return 0;
         }
-        
-        $firebaseService = new FirebaseNotificationService();
-        
+
+        $sentCount = 0;
+        $failedCount = 0;
+
         foreach ($notifications as $notification) {
-            $this->info("Processing notification: {$notification->title}");
-            
-            // Get all recipients for this notification
-            $recipients = $notification->recipients;
-            $userIds = [];
-            
-            foreach ($recipients as $recipient) {
-                if ($recipient->recipient_type === 'user') {
-                    $userIds[] = $recipient->recipient_id;
-                } elseif ($recipient->recipient_type === 'province') {
-                    // Get all users in this province
-                    $provinceUserIds = User::whereHas('jesuit', function ($query) use ($recipient) {
-                        $query->where('province_id', $recipient->recipient_id);
-                    })->pluck('id')->toArray();
-                    
-                    $userIds = array_merge($userIds, $provinceUserIds);
-                } elseif ($recipient->recipient_type === 'region') {
-                    // Get all users in this region
-                    $regionUserIds = User::whereHas('jesuit', function ($query) use ($recipient) {
-                        $query->where('region_id', $recipient->recipient_id);
-                    })->pluck('id')->toArray();
-                    
-                    $userIds = array_merge($userIds, $regionUserIds);
-                } elseif ($recipient->recipient_type === 'community') {
-                    // Get all users in this community
-                    $communityUserIds = User::whereHas('jesuit', function ($query) use ($recipient) {
-                        $query->where('current_community_id', $recipient->recipient_id);
-                    })->pluck('id')->toArray();
-                    
-                    $userIds = array_merge($userIds, $communityUserIds);
-                } elseif ($recipient->recipient_type === 'all') {
-                    // Get all users
-                    $allUserIds = User::pluck('id')->toArray();
-                    $userIds = array_merge($userIds, $allUserIds);
-                }
+            $this->line("Processing notification ID: {$notification->id} - '{$notification->title}'");
+
+            // Use the model method to get users
+            $users = $notification->getRecipientUsers();
+
+            if ($users->isEmpty()) {
+                $this->warn("No active recipients found for notification ID: {$notification->id}. Marking as sent to prevent resending.");
+                // Mark as sent even if no recipients to avoid retrying
+                 $notification->update([
+                     'is_sent' => true,
+                     'sent_at' => now(),
+                 ]);
+                continue; // Skip sending if no users
             }
-            
-            // Remove duplicates
-            $userIds = array_unique($userIds);
-            
-            if (empty($userIds)) {
-                $this->warn("No recipients found for notification: {$notification->title}");
-                continue;
-            }
-            
-            $users = User::whereIn('id', $userIds)->get();
-            
-            // Send notification via Firebase FCM
-            $success = $firebaseService->sendToUsers($notification, $users);
-            
+
+            $this->info("Attempting to send to {$users->count()} user(s)...");
+
+            // Send notification via Firebase FCM using the injected service
+            $success = $this->firebaseService->sendToUsers($notification, $users);
+
             if ($success) {
                 // Update notification status
                 $notification->update([
                     'is_sent' => true,
                     'sent_at' => now(),
                 ]);
-                $this->info("Notification sent successfully: {$notification->title}");
+                $this->info("Notification ID: {$notification->id} sent successfully.");
+                $sentCount++;
             } else {
-                $this->error("Failed to send notification: {$notification->title}");
+                $this->error("Failed to send notification ID: {$notification->id}. Check logs.");
+                // Don't update is_sent, it will be retried next time
+                $failedCount++;
             }
         }
-        
+
+        $this->info("Finished processing. Sent: {$sentCount}, Failed: {$failedCount}.");
         return 0;
     }
 } 

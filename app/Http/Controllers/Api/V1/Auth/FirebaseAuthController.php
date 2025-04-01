@@ -91,8 +91,8 @@ class FirebaseAuthController extends Controller
                 return response()->json(['message' => 'Invalid token'], 401);
             }
 
-            $firebaseUid = $verifiedIdToken->claims()->get('sub');
-            $phoneNumber = $verifiedIdToken->claims()->get('phone_number');
+            $firebaseUid = $verifiedIdToken['sub'] ?? null;
+            $phoneNumber = $verifiedIdToken['phone_number'] ?? null;
             
             if (!$phoneNumber) {
                 return response()->json(['message' => 'Phone number not found in token'], 400);

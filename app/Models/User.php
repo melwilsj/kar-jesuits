@@ -155,12 +155,14 @@ class User extends AuthenticatableModel
     }
 
     /**
-     * Add a new FCM token for this user
+     * Add a unique FCM token for the user.
+     *
+     * @param string $token
+     * @return void
      */
     public function addFcmToken(string $token): void
     {
         $tokens = $this->fcm_tokens ?? [];
-        
         if (!in_array($token, $tokens)) {
             $tokens[] = $token;
             $this->fcm_tokens = $tokens;
@@ -169,15 +171,18 @@ class User extends AuthenticatableModel
     }
 
     /**
-     * Remove an FCM token for this user
+     * Remove an FCM token for the user.
+     *
+     * @param string $token
+     * @return void
      */
     public function removeFcmToken(string $token): void
     {
         $tokens = $this->fcm_tokens ?? [];
-        
-        if (in_array($token, $tokens)) {
-            $tokens = array_filter($tokens, fn($t) => $t !== $token);
-            $this->fcm_tokens = array_values($tokens); // Reindex array
+        if (($key = array_search($token, $tokens)) !== false) {
+            unset($tokens[$key]);
+            // Re-index array if needed, though json_encode handles non-sequential keys
+            $this->fcm_tokens = array_values($tokens);
             $this->save();
         }
     }

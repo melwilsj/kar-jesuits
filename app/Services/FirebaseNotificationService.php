@@ -8,37 +8,85 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Google\Client;
 use Google\Service\FirebaseCloudMessaging;
+use Google\Auth\Credentials\ServiceAccountCredentials;
+use Google\Auth\HttpHandler\HttpHandlerFactory;
 
 class FirebaseNotificationService
 {
     private $accessToken;
     private $projectId;
+    private $httpClient;
 
     public function __construct()
     {
         $this->projectId = config('services.firebase.project_id');
-        $this->accessToken = $this->getAccessToken();
-    }
+        $credentialsJsonString = config('services.firebase.credentials');
 
-    private function getAccessToken()
-    {
+        if (empty($this->projectId)) {
+            Log::error('Firebase Project ID is not configured in services.php or .env.');
+            $this->accessToken = null;
+            $this->httpClient = null;
+            return;
+        }
+
+        if (empty($credentialsJsonString)) {
+            Log::error('Firebase credentials are not configured in services.php or .env (FIREBASE_CREDENTIALS).');
+            $this->accessToken = null;
+            $this->httpClient = null;
+            return;
+        }
+
         try {
-            $client = new Client();
-            $client->useApplicationDefaultCredentials();
-            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
-            $client->fetchAccessTokenWithAssertion();
-            $accessToken = $client->getAccessToken();
-            
-            return $accessToken['access_token'] ?? null;
+            $credentialsArray = json_decode($credentialsJsonString, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Failed to decode FIREBASE_CREDENTIALS JSON string: ' . json_last_error_msg());
+                $this->accessToken = null;
+                $this->httpClient = null;
+                return;
+            }
+
+            if (!isset($credentialsArray['client_email'], $credentialsArray['private_key'])) {
+                 Log::error('FIREBASE_CREDENTIALS JSON is missing required keys (client_email, private_key).');
+                 $this->accessToken = null;
+                 $this->httpClient = null;
+                 return;
+            }
+
+            $credentials = new ServiceAccountCredentials(
+                'https://www.googleapis.com/auth/firebase.messaging',
+                $credentialsArray
+            );
+
+            $this->httpClient = HttpHandlerFactory::build();
+            $token = $credentials->fetchAuthToken($this->httpClient);
+
+            if (isset($token['access_token'])) {
+                $this->accessToken = $token['access_token'];
+            } else {
+                Log::error('Failed to fetch Firebase access token using provided credentials.', ['token_response' => $token]);
+                $this->accessToken = null;
+                $this->httpClient = null;
+            }
+
         } catch (\Exception $e) {
-            Log::error('Failed to get Firebase access token: ' . $e->getMessage());
-            return null;
+            Log::error('Failed to initialize FirebaseNotificationService or get access token: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
+            $this->accessToken = null;
+            $this->httpClient = null;
         }
     }
 
     public function sendNotification(Notification $notification, array $tokens)
     {
-        if (empty($tokens) || empty($this->accessToken)) {
+        if (empty($tokens) || empty($this->accessToken) || empty($this->httpClient)) {
+             Log::warning('FirebaseNotificationService not properly initialized or no tokens provided. Skipping send.', [
+                 'notification_id' => $notification->id,
+                 'has_token' => !empty($this->accessToken),
+                 'has_http_client' => !empty($this->httpClient),
+                 'token_count' => count($tokens)
+             ]);
             return false;
         }
 
@@ -47,6 +95,10 @@ class FirebaseNotificationService
         $messages = [];
 
         foreach ($tokens as $token) {
+            if (empty($token) || !is_string($token)) {
+                Log::warning('Invalid FCM token encountered, skipping.', ['notification_id' => $notification->id]);
+                continue;
+            }
             $messages[] = [
                 'message' => [
                     'token' => $token,
@@ -79,39 +131,82 @@ class FirebaseNotificationService
             ];
         }
 
+        if (empty($messages)) {
+            Log::info('No valid messages to send after filtering tokens.', ['notification_id' => $notification->id]);
+            return false;
+        }
+
         $successCount = 0;
-        
-        foreach ($messages as $message) {
+        $totalMessages = count($messages);
+
+        foreach ($messages as $index => $message) {
+            $token = $message['message']['token'];
             try {
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $this->accessToken,
-                    'Content-Type' => 'application/json',
-                ])->post($url, $message);
-                
+                $response = Http::withToken($this->accessToken)
+                                ->withHeaders(['Content-Type' => 'application/json'])
+                                ->post($url, $message);
+
                 if ($response->successful()) {
                     $successCount++;
                 } else {
-                    Log::error('FCM error: ' . $response->body());
+                    Log::error('FCM API error response:', [
+                        'notification_id' => $notification->id,
+                        'token_ending_in' => substr($token, -6),
+                        'status_code' => $response->status(),
+                        'response_body' => $response->json() ?? $response->body(),
+                    ]);
                 }
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                 Log::error('HTTP Request Exception during FCM send:', [
+                    'notification_id' => $notification->id,
+                    'token_ending_in' => substr($token, -6),
+                    'message' => $e->getMessage(),
+                    'response_body' => $e->response->body() ?? null,
+                 ]);
             } catch (\Exception $e) {
-                Log::error('FCM notification error: ' . $e->getMessage());
+                Log::error('General Exception during FCM send HTTP request:', [
+                    'notification_id' => $notification->id,
+                    'token_ending_in' => substr($token, -6),
+                    'message' => $e->getMessage(),
+                    'exception' => $e,
+                ]);
             }
         }
-        
+
+        if ($successCount > 0) {
+             Log::info("FCM Send Summary: {$successCount}/{$totalMessages} messages sent successfully.", ['notification_id' => $notification->id]);
+        } else if ($totalMessages > 0) {
+             Log::error("FCM Send Summary: Failed to send any messages ({$totalMessages} attempted).", ['notification_id' => $notification->id]);
+        }
+
         return $successCount > 0;
     }
 
     public function sendToUsers(Notification $notification, $users)
     {
         $tokens = [];
-        
+
+        if (!is_iterable($users)) {
+            Log::error('Invalid $users data provided to sendToUsers. Expected iterable.', ['notification_id' => $notification->id]);
+            return false;
+        }
+
         foreach ($users as $user) {
-            // Retrieve FCM tokens for this user
-            if ($user->fcm_tokens) {
-                $tokens = array_merge($tokens, $user->fcm_tokens);
+            if ($user instanceof User && !empty($user->fcm_tokens) && is_array($user->fcm_tokens)) {
+                $validUserTokens = array_filter($user->fcm_tokens, fn($token) => !empty($token) && is_string($token));
+                if (!empty($validUserTokens)) {
+                    $tokens = array_merge($tokens, $validUserTokens);
+                }
             }
         }
-        
-        return $this->sendNotification($notification, array_unique($tokens));
+
+        $uniqueTokens = array_unique($tokens);
+
+        if (empty($uniqueTokens)) {
+             Log::info('No valid, unique FCM tokens found for any recipient.', ['notification_id' => $notification->id]);
+             return false;
+        }
+
+        return $this->sendNotification($notification, $uniqueTokens);
     }
 } 

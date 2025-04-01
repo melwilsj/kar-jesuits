@@ -19,6 +19,7 @@ use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Placeholder;
+use Filament\Notifications\Notification as FilamentNotification;
 
 class NotificationResource extends Resource
 {
@@ -56,17 +57,14 @@ class NotificationResource extends Resource
                         
                         Forms\Components\Select::make('event_id')
                             ->label('Related Event')
-                            ->options(function() {
-                                return Event::whereNotNull('title')
-                                    ->where('title', '!=', '')
-                                    ->whereNotNull('start_datetime')
-                                    ->get()
-                                    ->mapWithKeys(function ($event) {
-                                        return [$event->id => $event->title . ' (' . $event->start_datetime->format('Y-m-d') . ')'];
-                                    })
-                                    ->toArray();
+                            ->relationship('event', 'title', function (Builder $query) {
+                                return $query->whereNotNull('title')
+                                             ->where('title', '!=', '')
+                                             ->whereNotNull('start_datetime');
                             })
-                            ->searchable(),
+                            ->getOptionLabelFromRecordUsing(fn (Event $record) => "{$record->title} ({$record->start_datetime->format('Y-m-d')})")
+                            ->searchable()
+                            ->preload(),
                         
                         Forms\Components\DateTimePicker::make('scheduled_for')
                             ->label('Schedule for')
@@ -119,6 +117,7 @@ class NotificationResource extends Resource
                         Forms\Components\CheckboxList::make('user_recipients')
                             ->label('Users')
                             ->options(User::pluck('name', 'id'))
+                            ->searchable()
                             ->hidden(fn (callable $get) => !in_array('user', $get('recipient_types') ?? []))
                             ->columnSpan(2),
                     ])->columns(2),
@@ -143,22 +142,26 @@ class NotificationResource extends Resource
                     ]),
                 
                 Tables\Columns\TextColumn::make('event.title')
-                    ->label('Related Event'),
+                    ->label('Related Event')
+                    ->placeholder('N/A'),
                 
                 Tables\Columns\TextColumn::make('scheduled_for')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder('Not Scheduled'),
                 
                 Tables\Columns\TextColumn::make('sent_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder('Not Sent'),
                 
                 Tables\Columns\IconColumn::make('is_sent')
                     ->boolean()
                     ->label('Sent'),
                 
                 Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Created By'),
+                    ->label('Created By')
+                    ->placeholder('N/A'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -182,70 +185,21 @@ class NotificationResource extends Resource
                     ->query(fn (Builder $query) => $query->where('is_sent', true)),
                 
                 Tables\Filters\Filter::make('scheduled')
-                    ->label('Scheduled')
+                    ->label('Scheduled & Unsent')
                     ->query(fn (Builder $query) => $query->whereNotNull('scheduled_for')->where('is_sent', false)),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->visible(fn (Notification $record): bool => !$record->is_sent),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('send_now')
                     ->label('Send Now')
                     ->icon('heroicon-o-paper-airplane')
-                    ->action(function (Notification $record) {
-                        $firebaseService = new FirebaseNotificationService();
-                        
-                        // Get all recipients for this notification
-                        $recipients = $record->recipients;
-                        $userIds = [];
-                        
-                        foreach ($recipients as $recipient) {
-                            if ($recipient->recipient_type === 'user') {
-                                $userIds[] = $recipient->recipient_id;
-                            } elseif ($recipient->recipient_type === 'province') {
-                                $provinceUserIds = User::whereHas('jesuit', function ($query) use ($recipient) {
-                                    $query->where('province_id', $recipient->recipient_id);
-                                })->pluck('id')->toArray();
-                                
-                                $userIds = array_merge($userIds, $provinceUserIds);
-                            } elseif ($recipient->recipient_type === 'region') {
-                                $regionUserIds = User::whereHas('jesuit', function ($query) use ($recipient) {
-                                    $query->where('region_id', $recipient->recipient_id);
-                                })->pluck('id')->toArray();
-                                
-                                $userIds = array_merge($userIds, $regionUserIds);
-                            } elseif ($recipient->recipient_type === 'community') {
-                                $communityUserIds = User::whereHas('jesuit', function ($query) use ($recipient) {
-                                    $query->where('current_community_id', $recipient->recipient_id);
-                                })->pluck('id')->toArray();
-                                
-                                $userIds = array_merge($userIds, $communityUserIds);
-                            } elseif ($recipient->recipient_type === 'all') {
-                                $allUserIds = User::pluck('id')->toArray();
-                                $userIds = array_merge($userIds, $allUserIds);
-                            }
-                        }
-                        
-                        // Remove duplicates
-                        $userIds = array_unique($userIds);
-                        
-                        if (empty($userIds)) {
-                            return;
-                        }
-                        
-                        $users = User::whereIn('id', $userIds)->get();
-                        
-                        // Send notification via Firebase FCM
-                        $success = $firebaseService->sendToUsers($record, $users);
-                        
-                        if ($success) {
-                            // Update notification status
-                            $record->update([
-                                'is_sent' => true,
-                                'sent_at' => now(),
-                            ]);
-                        }
+                    ->action(function (Notification $record, FirebaseNotificationService $firebaseService) {
+                        static::sendNotificationAction($record, $firebaseService);
                     })
+                    ->requiresConfirmation()
+                    ->color('success')
                     ->visible(fn (Notification $record): bool => !$record->is_sent),
             ])
             ->bulkActions([
@@ -274,6 +228,75 @@ class NotificationResource extends Resource
     
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('is_sent', false)->count();
+        return cache()->remember('unsent_notifications_count', 60, function () {
+             return static::getModel()::where('is_sent', false)->count();
+        });
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function () {
+            cache()->forget('unsent_notifications_count');
+        });
+
+        static::deleted(function () {
+            cache()->forget('unsent_notifications_count');
+        });
+    }
+
+    public static function sendNotificationAction(Notification $notification, FirebaseNotificationService $firebaseService, bool $showFeedback = true): bool
+    {
+        if ($notification->is_sent) {
+             if ($showFeedback) {
+                FilamentNotification::make()
+                    ->title('Already Sent')
+                    ->body('This notification has already been sent.')
+                    ->warning()
+                    ->send();
+            }
+            return false;
+        }
+
+        $users = $notification->getRecipientUsers();
+
+        if ($users->isEmpty()) {
+            if ($showFeedback) {
+                FilamentNotification::make()
+                    ->title('No Recipients')
+                    ->body('No active users found matching the recipient criteria.')
+                    ->warning()
+                    ->send();
+            }
+            return false;
+        }
+
+        $success = $firebaseService->sendToUsers($notification, $users);
+
+        if ($success) {
+            $notification->update([
+                'is_sent' => true,
+                'sent_at' => now(),
+                'scheduled_for' => null,
+            ]);
+            if ($showFeedback) {
+                FilamentNotification::make()
+                    ->title('Notification Sent')
+                    ->body("Successfully sent notification '{$notification->title}' to {$users->count()} user(s).")
+                    ->success()
+                    ->send();
+            }
+            return true;
+        } else {
+             if ($showFeedback) {
+                FilamentNotification::make()
+                    ->title('Sending Failed')
+                    ->body("Failed to send notification '{$notification->title}'. Check system logs for details.")
+                    ->danger()
+                    ->send();
+            }
+            return false;
+        }
     }
 } 
