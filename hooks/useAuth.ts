@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'expo-router';
 import { DataStorage } from '@/services/storage';
 import { CurrentJesuit } from '@/types/api';
+import { authAPI } from '@/services/api';
 
 interface User {
   id: number;
@@ -26,38 +27,45 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setCurrentJesuit: (jesuit: CurrentJesuit | null) => void;
   setLoading: (loading: boolean) => void;
-  logout: () => void;
+  logout: (performApiUnregister?: boolean) => void;
   setAuthData: (data: { token: string; user: User; jesuit?: CurrentJesuit }) => void;
 }
 
 export const useAuth = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       user: null,
       currentJesuit: null,
       isLoading: true,
       isAuthenticated: false,
-      setToken: (token) => 
+      setToken: (token) =>
         set({ token, isAuthenticated: !!token }),
-      setUser: (user) => 
+      setUser: (user) =>
         set({ user }),
-      setCurrentJesuit: (jesuit) => 
+      setCurrentJesuit: (jesuit) =>
         set({ currentJesuit: jesuit }),
-      setLoading: (loading) => 
+      setLoading: (loading) =>
         set({ isLoading: loading }),
       setAuthData: (data) => set({
         token: data.token,
         user: data.user,
         currentJesuit: data.jesuit,
-        isAuthenticated: true
+        isAuthenticated: true,
+        isLoading: false,
       }),
-      logout: async () => {
+      logout: async (performApiUnregister = true) => {
+        const fcmToken = FirebaseService.getCurrentFcmToken();
         try {
+          if (performApiUnregister && fcmToken && get().token) {
+            await authAPI.unregisterFcmToken(fcmToken);
+          }
           await FirebaseService.signOut();
           await DataStorage.clearAll();
+        } catch (error) {
+          console.error("Error during logout process:", error);
         } finally {
-          set({ token: null, user: null, currentJesuit: null, isAuthenticated: false });
+          set({ token: null, user: null, currentJesuit: null, isAuthenticated: false, isLoading: false });
         }
       },
     }),
@@ -78,7 +86,6 @@ export const useAuthGuard = () => {
       const isAuthRoute = pathname.includes('(auth)');
       const isVerifyRoute = pathname.includes('verify');
       
-      // Allow verify route even when not authenticated
       if (!isAuthenticated && !isAuthRoute && !isVerifyRoute) {
         router.replace('/(auth)/login');
       } else if (isAuthenticated && isAuthRoute) {
@@ -92,33 +99,49 @@ export const useAuthGuard = () => {
 
 export const useInitAuth = () => {
   const useDataSync = require('./useDataSync').useDataSync;
-  const { setToken, setLoading, user } = useAuth();
+  const { setToken, setLoading, user, isAuthenticated, token: backendToken } = useAuth();
   const { syncData } = useDataSync();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Firebase auth state listener
   useEffect(() => {
     const unsubscribe = FirebaseService.onAuthStateChanged(async (firebaseUser) => {
       try {
         if (!firebaseUser) {
           setToken(null);
+          if (useAuth.getState().isAuthenticated) {
+             console.log("Firebase user logged out, clearing local state.");
+             await useAuth.getState().logout(false);
+          } else {
+             setLoading(false);
+          }
         }
       } catch (error) {
         console.error('Auth state change error:', error);
-        setToken(null);
-      } finally {
-        setLoading(false);
+        await useAuth.getState().logout(false);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Background sync when authenticated
+  useEffect(() => {
+    if (isAuthenticated && backendToken) {
+      console.log("User authenticated with backend, attempting to register FCM token.");
+      FirebaseService.getFcmToken().then(fcmToken => {
+        if (fcmToken) {
+          authAPI.registerFcmToken(fcmToken).catch(err => {
+            console.error("Failed to register FCM token after login:", err);
+          });
+        } else {
+            console.log("Could not get FCM token after login.");
+        }
+      }).catch(err => console.error("Error getting FCM token after login:", err));
+    }
+  }, [isAuthenticated, backendToken]);
+
   useEffect(() => {
     if (user) {
-      // Use setTimeout to run sync in the background after auth is confirmed
       setTimeout(() => {
         syncData(true, true).catch((err: any) => {
           console.error('Background sync failed:', err);

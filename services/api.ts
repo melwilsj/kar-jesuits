@@ -25,7 +25,10 @@ api.interceptors.response.use(
   async error => {
     if (error.response?.status === 401) {
       // On 401, just logout
-      useAuth.getState().logout();
+      // Avoid calling logout directly here to prevent loops if the unregister call fails
+      // The logout logic in useAuth should handle clearing state
+      console.warn('API request unauthorized (401). Logging out.');
+      useAuth.getState().logout(false); // Pass false to prevent recursive unregister call
       return Promise.reject(new Error('Session expired. Please login again.'));
     }
     return Promise.reject(error);
@@ -56,11 +59,38 @@ export const authAPI = {
   },
 
   logout: async () => {
+    // Logout API call is now handled within useAuth.logout to ensure FCM unregistration
+    // This function can be kept for potential direct calls if needed, but the primary flow is via useAuth
     try {
-      await api.post('/auth/logout');
-    } finally {
-      // Always clear auth state, even if API call fails
-      useAuth.getState().logout();
+        await api.post('/auth/logout');
+    } catch (error) {
+        console.error("API Logout error:", error);
+        // Don't re-throw here, let the main logout flow continue
+    }
+  },
+
+  // Add FCM token registration/unregistration functions
+  registerFcmToken: async (fcmToken: string) => {
+    try {
+      console.log('Registering FCM token:', fcmToken);
+      const response = await api.post('/fcm/register', { fcm_token: fcmToken });
+      console.log('FCM Token registered successfully');
+      return response.data;
+    } catch (error) {
+      console.error('Error registering FCM token:', handleApiError(error));
+      throw error; // Re-throw to handle it in the calling function if needed
+    }
+  },
+
+  unregisterFcmToken: async (fcmToken: string) => {
+    try {
+      console.log('Unregistering FCM token:', fcmToken);
+      const response = await api.post('/fcm/unregister', { fcm_token: fcmToken });
+      console.log('FCM Token unregistered successfully');
+      return response.data;
+    } catch (error) {
+      // Log the error but don't prevent logout if unregistration fails
+      console.error('Error unregistering FCM token:', handleApiError(error));
     }
   },
 };

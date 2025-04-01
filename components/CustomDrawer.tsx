@@ -19,7 +19,7 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
   const defaultImage = 'https://placehold.co/600x400.png';
 
   // Define which routes should be visible in the drawer
-  const visibleRoutes = ['home', 'filter/index', 'space', 'settings'];
+  const visibleRoutes = ['home', 'filter/index', 'space/index', 'settings'];
 
   // Filter out any undefined routes and only include visible routes
   const filteredProps = {

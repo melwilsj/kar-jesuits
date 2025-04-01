@@ -1,41 +1,51 @@
 import { Stack, SplashScreen } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { useAuth, useInitAuth } from '../hooks/useAuth';
+import { useAuth, useInitAuth, useAuthGuard } from '../hooks/useAuth';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { FirebaseService } from '@/services/firebase';
 import LoadingProgress from '@/components/ui/LoadingProgress';
 import { useDataSync } from '@/hooks/useDataSync';
 import { useFontSize } from '@/hooks/useSettings';
 import { FontSizeProvider } from '@/context/FontSizeContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Notifications from 'expo-notifications';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
+// Configure notification handling (optional but recommended)
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 export default function RootLayout() {
-  const { isLoading, isAuthenticated } = useAuth();
   const { isLoading: isSyncing, progress } = useDataSync();
-  const [isInitialized, setIsInitialized] = useState(false);
   const fontSizeScale = useFontSize();
-  
-  useInitAuth();
-  
+  const [firebaseInitialized, setFirebaseInitialized] = useState(false);
+  const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
+
+  // Initialize Firebase and Auth listeners
   useEffect(() => {
-    const init = async () => {
-      try {
-        await FirebaseService.init();
-        setIsInitialized(true);
-      } catch (error) {
-        console.error('Initialization error:', error);
-        setIsInitialized(true); // Still set initialized to prevent hanging
-      } finally {
-        SplashScreen.hideAsync().catch(console.error);
-      }
-    };
-    
-    init();
+    FirebaseService.init()
+      .then(() => setFirebaseInitialized(true))
+      .catch(console.error);
   }, []);
 
-  if (!isInitialized || isLoading || isSyncing) {
+  useInitAuth();
+  useAuthGuard();
+
+  const isLoading = !firebaseInitialized || isAuthLoading;
+
+  useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [isLoading]);
+  if (isLoading || isSyncing) {
     return <LoadingProgress 
       message={isSyncing ? "Syncing data..." : "Loading..."} 
       progress={isSyncing ? progress : 0} 
@@ -43,6 +53,7 @@ export default function RootLayout() {
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <FontSizeProvider value={fontSizeScale}>
       <SafeAreaProvider>
         <Stack
@@ -59,5 +70,6 @@ export default function RootLayout() {
         </Stack>
       </SafeAreaProvider>
     </FontSizeProvider>
+    </GestureHandlerRootView>
   );
 } 

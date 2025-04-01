@@ -1,11 +1,18 @@
 import { getAuth, signInWithCredential } from '@react-native-firebase/auth';
 import PhoneAuthProvider from '@react-native-firebase/auth';
 import GoogleAuthProvider from '@react-native-firebase/auth';
+import messaging from '@react-native-firebase/messaging';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 import { API_CONFIG } from '../constants/Config';
 import {
   GoogleSignin
 } from '@react-native-google-signin/google-signin';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { authAPI } from './api';
+import { useAuth } from '@/hooks/useAuth';
+
+let currentFcmToken: string | null = null;
 
 export const FirebaseService = {
   async init() {
@@ -20,11 +27,131 @@ export const FirebaseService = {
         offlineAccess: true,
       });
 
+      // Request Notification Permissions on init
+      await this.requestNotificationPermission();
+
+      // Set up FCM listeners
+      this.setupFcmListeners();
+
       return true;
     } catch (error) {
       console.error('Firebase initialization error:', error);
       throw error;
     }
+  },
+
+  async requestNotificationPermission(): Promise<boolean> {
+    if (Platform.OS === 'ios') {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+        }
+        if (finalStatus !== 'granted') {
+            console.log('Failed to get push token for push notification!');
+            return false;
+        }
+        // For iOS, also request permission via Firebase messaging
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+        if (enabled) {
+            console.log('Authorization status:', authStatus);
+            return true;
+        } else {
+            console.log('Notification permission denied on iOS.');
+            return false;
+        }
+    } else { // Android permissions are handled differently (usually granted by default)
+        // Check if permissions are granted using expo-notifications
+         const { status } = await Notifications.getPermissionsAsync();
+         if (status === 'granted') {
+             console.log('Notification permissions already granted on Android.');
+             return true;
+         }
+         // If not granted, request them (though often not needed explicitly unless targeting specific Android versions/features)
+         const { status: newStatus } = await Notifications.requestPermissionsAsync();
+         if (newStatus === 'granted') {
+             console.log('Notification permissions granted on Android.');
+             return true;
+         } else {
+             console.log('Notification permissions denied on Android.');
+             return false;
+         }
+    }
+  },
+
+  async getFcmToken(): Promise<string | null> {
+    try {
+        // Ensure permissions first
+        const hasPermission = await this.requestNotificationPermission();
+        if (!hasPermission) {
+            console.log("No notification permission, cannot get FCM token.");
+            return null;
+        }
+
+        // Check if token already exists
+        let token = await messaging().getToken();
+        if (token) {
+            console.log('FCM Token:', token);
+            currentFcmToken = token; // Store locally
+            return token;
+        } else {
+            console.log('Could not get FCM token.');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error getting FCM token:', error);
+        return null;
+    }
+  },
+
+  setupFcmListeners() {
+    // Listener for token refresh
+    messaging().onTokenRefresh(async (newToken) => {
+      console.log('FCM Token refreshed:', newToken);
+      currentFcmToken = newToken; // Update local store
+      // Re-register the new token with your backend if user is logged in
+      const state = useAuth.getState();
+      if (state.isAuthenticated && state.token) {
+        try {
+          await authAPI.registerFcmToken(newToken);
+        } catch (error) {
+          console.error('Failed to re-register refreshed FCM token:', error);
+        }
+      }
+    });
+
+    // Listener for foreground messages (optional but recommended)
+    messaging().onMessage(async remoteMessage => {
+      console.log('FCM Message Received in Foreground:', JSON.stringify(remoteMessage));
+      // Use expo-notifications to display the notification while app is in foreground
+      Notifications.presentNotificationAsync({
+        title: remoteMessage.notification?.title,
+        body: remoteMessage.notification?.body,
+        data: remoteMessage.data, // Pass data along
+      });
+    });
+
+    // Listener for background/quit state messages (optional)
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('Message handled in the background!', remoteMessage);
+      // You can add background task logic here if needed
+    });
+
+    // Listener for when a user taps on a notification (optional)
+     Notifications.addNotificationResponseReceivedListener(response => {
+       console.log('Notification tapped:', response.notification.request.content.data);
+       // Handle navigation or other actions based on notification data
+       // e.g., router.push('/notifications');
+     });
+  },
+
+  getCurrentFcmToken(): string | null {
+      return currentFcmToken;
   },
 
   async checkPhoneExists(phoneNumber: string): Promise<boolean> {

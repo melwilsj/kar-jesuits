@@ -31,7 +31,7 @@ export default function AppLayout() {
           options={{ drawerLabel: 'Home' }} />
         <Drawer.Screen name="filter/index" 
           options={{ drawerLabel: 'Filter' }} />
-        <Drawer.Screen name="space" 
+        <Drawer.Screen name="space/index" 
           options={{ drawerLabel: 'Space' }} />
         <Drawer.Screen name="settings" 
           options={{ drawerLabel: 'Settings' }} />
