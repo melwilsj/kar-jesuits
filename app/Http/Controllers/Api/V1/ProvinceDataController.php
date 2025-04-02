@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\Community;
 use Illuminate\Support\Facades\Cache;
 use App\Constants\RoleTypes;
-
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 class ProvinceDataController extends BaseController
 {
     public function getProvinceJesuitsData(Request $request)
@@ -43,13 +44,26 @@ class ProvinceDataController extends BaseController
 
         // Transform data based on requester's context
         $transformedJesuits = $jesuits->map(function ($jesuit) use ($requestorRegionId) {
+            // Generate temporary photo URL
+            $photoUrl = null;
+            if ($jesuit->photo_url) {
+                try {
+                    $photoUrl = Storage::disk('cloudflare')->temporaryUrl(
+                        $jesuit->photo_url,
+                        now()->addDays(6) // Changed from addMonth()
+                    );
+                } catch (\Exception $e) {
+                    Log::error("Failed to generate temporary URL for Jesuit photo: {$jesuit->photo_url}. Error: {$e->getMessage()}");
+                }
+            }
+
             $data = [
                 'id' => $jesuit->id,
                 'user_id' => $jesuit->user_id,
                 'name' => $jesuit->user->name,
                 'code' => $jesuit->code,
                 'category' => $jesuit->category,
-                'photo_url' => $jesuit->photo_url,
+                'photo_url' => $photoUrl, // Use the generated temporary URL
                 'email' => $jesuit->user->email,
                 'phone_number' => $jesuit->user->phone_number,
                 'dob' => $jesuit->dob,
@@ -66,10 +80,10 @@ class ProvinceDataController extends BaseController
 
                 
                 // Current community
-                'current_community_id' => $jesuit->currentCommunity->id,
-                'current_community' => $jesuit->currentCommunity->name,
-                'province' => $jesuit->province->code,
-                'region' => $jesuit->region? $jesuit->region->code:null,
+                'current_community_id' => $jesuit->currentCommunity?->id,
+                'current_community' => $jesuit->currentCommunity?->name,
+                'province' => $jesuit->province?->code,
+                'region' => $jesuit->region?->code,
                 
                 // Active roles
                 'roles' => $jesuit->activeRoles->map(function($role) {

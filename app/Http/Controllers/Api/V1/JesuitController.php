@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Jesuit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class JesuitController extends BaseController
 {
@@ -43,12 +45,24 @@ class JesuitController extends BaseController
             }
         ]);
 
+        $photoUrl = null;
+        if ($jesuit->photo_url) {
+            try {
+                $photoUrl = Storage::disk('cloudflare')->temporaryUrl(
+                    $jesuit->photo_url,
+                    now()->addDays(6)
+                );
+            } catch (\Exception $e) {
+                Log::error("Failed to generate temporary URL for Jesuit photo: {$jesuit->photo_url}. Error: {$e->getMessage()}");
+            }
+        }
+
         $data = [
             'id' => $jesuit->id,
             'name' => $jesuit->user->name,
             'code' => $jesuit->code,
             'category' => $jesuit->category,
-            'photo_url' => $jesuit->photo_url,
+            'photo_url' => $photoUrl,
             'email' => $jesuit->user->email,
             'phone_number' => $jesuit->user->phone_number,
             'dob' => $jesuit->dob,
@@ -57,8 +71,8 @@ class JesuitController extends BaseController
             'final_vows_date' => $jesuit->final_vows_date,
             'academic_qualifications' => $jesuit->academic_qualifications,
             'publications' => $jesuit->publications,
-            'current_community' => $jesuit->currentCommunity->name,
-            'province' => $jesuit->province->code,
+            'current_community' => $jesuit->currentCommunity?->name,
+            'province' => $jesuit->province?->code,
             'region' => $jesuit->region?->code,
             'roles' => $jesuit->activeRoles->map(function($role) {
                 return [
@@ -76,11 +90,22 @@ class JesuitController extends BaseController
                 ];
             }),
             'documents' => $jesuit->documents->map(function($doc) {
+                $docUrl = null;
+                if ($doc->path) {
+                    try {
+                        $docUrl = Storage::disk('cloudflare')->temporaryUrl(
+                            $doc->path,
+                            now()->addDays(6)
+                        );
+                    } catch (\Exception $e) {
+                        Log::error("Failed to generate temporary URL for document: {$doc->path}. Error: {$e->getMessage()}");
+                    }
+                }
                 return [
                     'id' => $doc->id,
                     'name' => $doc->name,
                     'type' => $doc->type,
-                    'url' => $doc->url
+                    'url' => $docUrl
                 ];
             })
         ];
