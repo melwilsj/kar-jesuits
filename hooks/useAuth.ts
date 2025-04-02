@@ -87,7 +87,7 @@ export const useAuthGuard = (rootLayoutReady: boolean) => {
       return;
     }
 
-    const isAuthGroup = pathname.startsWith('/(auth)');
+    const isAuthGroup = pathname.startsWith('/login') || pathname.startsWith('/verify');
 
     if (!isAuthenticated && !isAuthGroup) {
       router.replace('/(auth)/login');
